@@ -1,10 +1,11 @@
 package com.networking.remote;
 
 import com.jcraft.jsch.*;
+import com.jcraft.jsch.ChannelSftp.LsEntry;
 import com.networking.config.RemoteHostProperties;
 
 import java.util.Vector;
-import com.jcraft.jsch.ChannelSftp.LsEntry;
+
 
 public class GetRemoteFiles
 {
@@ -21,10 +22,11 @@ public class GetRemoteFiles
             ChannelSftp channelSftp= (ChannelSftp) session.openChannel("sftp");
             channelSftp.connect();
 
-            Vector<LsEntry> files=channelSftp.ls(RemoteHostProperties.targetDirectory);
-            for(LsEntry lsEntry:files)
+            Vector files=channelSftp.ls(RemoteHostProperties.targetDirectory);
+            for (Object file : files)
             {
-                System.out.println(lsEntry.getFilename()+" is directory? "+lsEntry.getAttrs().isDir());
+                LsEntry lsEntry = (LsEntry) file;
+                System.out.println(lsEntry.getFilename() + " is directory? " + lsEntry.getAttrs().isDir());
             }
 
         }
