@@ -2,7 +2,7 @@ package com.networking.config;
 
 public class RemoteHostProperties
 {
-    static public String targetIpAddress="192.168.1.121";
+    static public String targetIpAddress="192.168.1.120";
 
     static public Integer port=22;
 

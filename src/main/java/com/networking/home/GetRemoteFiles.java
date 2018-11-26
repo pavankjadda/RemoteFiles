@@ -7,8 +7,6 @@ public class GetRemoteFiles
     public static void main(String[] args)
     {
         DownloadOperations downloadOperations= new DownloadOperations();
-        downloadOperations.getFile("/home/cuckoo/Desktop/hellotest.txt",
-                "/Users/pjadda/Downloads/test2.txt");
-
+        downloadOperations.copyFilesFromDirectory("/home/cuckoo/.cuckoo/storage/analyses/","/home/cuckoo/Desktop/MalwareReports/");
     }
 }
