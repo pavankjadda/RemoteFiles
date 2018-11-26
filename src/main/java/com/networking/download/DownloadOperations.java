@@ -84,13 +84,14 @@ public class DownloadOperations
                 System.out.println(remoteFilePath+" File Copied to Location -> "+localFilePath);
                 getTargetDataFromJsonFileAndRenameIt(localFile,localDirectoryName);
             }
-            //channelSftp.get(remoteDirectoryName,localDirectoryName);
         }
 
         catch (SftpException | IOException e)
         {
             e.printStackTrace();
         }
+
+        System.out.println("Files Transfer Success");
     }
 
     private void getDirectoryNumbers(Vector directories, List<Integer> totalNumberOfReports)
