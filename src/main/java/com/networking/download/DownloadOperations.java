@@ -24,13 +24,13 @@ public class DownloadOperations
     private ChannelSftp channelSftp=null;
     private RemoteOperationsUtil remoteOperationsUtil=null;
 
-    public DownloadOperations()
+    public DownloadOperations(String username, String password, String targetIpAddress)
     {
         JSch jSch=new JSch();
         try
         {
-            Session session=jSch.getSession(RemoteHostProperties.username,RemoteHostProperties.targetIpAddress);
-            session.setPassword(RemoteHostProperties.password);
+            Session session=jSch.getSession(username,targetIpAddress);
+            session.setPassword(password);
             session.setConfig("StrictHostKeyChecking","no");
             session.connect();
 
