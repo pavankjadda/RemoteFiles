@@ -15,4 +15,6 @@ public class RemoteHostProperties
     static public String targetFilePath="/home/cuckoo/";
 
     static public String targetDirectory="/home/cuckoo";
+
+    static public String localTempFilePath="/home/cuckoo/.cuckoo/reports-backup/test/report.json";
 }
