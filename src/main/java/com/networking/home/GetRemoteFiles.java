@@ -12,8 +12,8 @@ public class GetRemoteFiles
         //downloadOperations.listFilesInDirectory("/home/cuckoo/.cuckoo/storage/analyses/");
 
         DeleteAnalyzedMalwareFiles deleteAnalyzedMalwareFiles=new DeleteAnalyzedMalwareFiles();
-        deleteAnalyzedMalwareFiles.deleteAnalyzedFiles("/home/cuckoo/Desktop/VirusShare/VirusShare_00000/","/home/cuckoo/.cuckoo/storage/analyses/");
-
-
+        //deleteAnalyzedMalwareFiles.deleteAnalyzedFiles("/home/cuckoo/Desktop/VirusShare/VirusShare_00000/","/home/cuckoo/.cuckoo/storage/analyses/");
+        deleteAnalyzedMalwareFiles.deleteAnalyzedFilesFromLocalCustomDirectory("/home/cuckoo/Desktop/VirusShare_00322",
+                "/home/cuckoo/.cuckoo/reports-backup/malwares");
     }
 }
