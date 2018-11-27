@@ -1,0 +1,118 @@
+[
+  {
+    "malwareFilesDirectory": {
+      "type": "/home/cuckoo/Desktop/VirusShare_00322/"
+    },
+    "reportsDirectory": {
+      "type": "/home/cuckoo/.cuckoo/storage/analysis/"
+    },
+    "ipAddress": {
+      "type": "192.168.1.121"
+    },
+    "localTempFilePath": {
+      "type": "/home/cuckoo/.cuckoo/reports-backup/test/report.json"
+    },
+    "host": {
+      "type": "192.168.1.121"
+    },
+    "password": {
+      "type": "cuckoo"
+    },
+    "username": {
+      "type": "cuckoo"
+    },
+    "port": {
+      "type": "22"
+    },
+    "operatingSystem": {
+      "type": "Ubuntu"
+    }
+  },
+  {
+    "malwareFilesDirectory": {
+      "type": "/home/cuckoo/Desktop/VirusShare/VirusShare_00000/"
+    },
+    "reportsDirectory": {
+      "type": "/home/cuckoo/.cuckoo/storage/analysis/"
+    },
+    "ipAddress": {
+      "type": "192.168.1.120"
+    },
+    "localTempFilePath": {
+      "type": "/home/cuckoo/.cuckoo/reports-backup/test/report.json"
+    },
+    "host": {
+      "type": "192.168.1.120"
+    },
+    "password": {
+      "type": "cuckoo"
+    },
+    "username": {
+      "type": "cuckoo"
+    },
+    "port": {
+      "type": "22"
+    },
+    "operatingSystem": {
+      "type": "Ubuntu"
+    }
+  },
+  {
+    "malwareFilesDirectory": {
+      "type": "/Users/malwarecuckoo2/Desktop/VirusShare/VirusShare_00320/"
+    },
+    "reportsDirectory": {
+      "type": "/Users/malwarecuckoo2/.cuckoo/storage/analysis/"
+    },
+    "ipAddress": {
+      "type": "192.168.1.125"
+    },
+    "localTempFilePath": {
+      "type": "/Users/malwarecuckoo2/test/report.json"
+    },
+    "host": {
+      "type": "192.168.1.125"
+    },
+    "password": {
+      "type": "cuckoo"
+    },
+    "username": {
+      "type": "malwarecuckoo2"
+    },
+    "port": {
+      "type": "22"
+    },
+    "operatingSystem": {
+      "type": "macOS"
+    }
+  },
+  {
+    "malwareFilesDirectory": {
+      "type": "/Users/malwarecuckoo1/Desktop/VirusShare/VirusShare_00321/"
+    },
+    "reportsDirectory": {
+      "type": "/Users/malwarecuckoo1/.cuckoo/storage/analysis/"
+    },
+    "ipAddress": {
+      "type": "192.168.1.126"
+    },
+    "localTempFilePath": {
+      "type": "/Users/malwarecuckoo1/test/report.json"
+    },
+    "host": {
+      "type": "192.168.1.126"
+    },
+    "password": {
+      "type": "cuckoo"
+    },
+    "username": {
+      "type": "malwarecuckoo1"
+    },
+    "port": {
+      "type": "22"
+    },
+    "operatingSystem": {
+      "type": "macOS"
+    }
+  }
+]
