@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jcraft.jsch.*;
 import com.networking.config.RemoteHostProperties;
+import com.networking.util.RemoteOperationsUtil;
 import org.springframework.boot.json.JacksonJsonParser;
 
 import java.io.File;
@@ -21,6 +22,8 @@ import java.util.Vector;
 public class DownloadOperations
 {
     private ChannelSftp channelSftp=null;
+    private RemoteOperationsUtil remoteOperationsUtil=null;
+
     public DownloadOperations()
     {
         JSch jSch=new JSch();
@@ -33,6 +36,7 @@ public class DownloadOperations
 
             this.channelSftp= (ChannelSftp) session.openChannel("sftp");
             channelSftp.connect();
+            this.remoteOperationsUtil=new RemoteOperationsUtil();
 
         }
 
@@ -62,19 +66,18 @@ public class DownloadOperations
         }
     }
 
-    public void copyFilesFromDirectory(String remoteDirectoryName,String localDirectoryName)
+    public void copyFilesFromDirectory(String remoteDirectory,String localDirectory)
     {
         Vector directories;
-        List<Integer> totalNumberOfReports=new ArrayList<>();
+        List<Integer> reportsDirectoryNumbers=new ArrayList<>();
         try
         {
-            directories = channelSftp.ls(remoteDirectoryName);
-            getDirectoryNumbers(directories,totalNumberOfReports);
-
-            for(Integer directoryNumber:totalNumberOfReports)
+            directories = channelSftp.ls(remoteDirectory);
+            remoteOperationsUtil.getDirectoryNumbers(directories,reportsDirectoryNumbers);
+            for(Integer directoryNumber:reportsDirectoryNumbers)
             {
-                String remoteFilePath=remoteDirectoryName+directoryNumber+"/reports/report.json";
-                String localFilePath=localDirectoryName+"report.json";
+                String remoteFilePath=remoteDirectory+directoryNumber+"/reports/report.json";
+                String localFilePath=localDirectory+"report.json";
                 File localFile=new File(localFilePath);
                 if(localFile.exists())
                     localFile.delete();
@@ -82,7 +85,7 @@ public class DownloadOperations
                 InputStream in=channelSftp.get(remoteFilePath);
                 Files.copy(in, localFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
                 System.out.println(remoteFilePath+" File Copied to Location -> "+localFilePath);
-                getTargetDataFromJsonFileAndRenameIt(localFile,localDirectoryName);
+                getTargetDataFromJsonFileAndRenameIt(localFile,localDirectory);
             }
         }
 
@@ -94,25 +97,6 @@ public class DownloadOperations
         System.out.println("Files Transfer Success");
     }
 
-    private void getDirectoryNumbers(Vector directories, List<Integer> totalNumberOfReports)
-    {
-        for (Object directory : directories)
-        {
-            ChannelSftp.LsEntry lsEntry = (ChannelSftp.LsEntry) directory;
-            if(lsEntry.getAttrs().isDir() && !(lsEntry.getFilename().equals(".") || lsEntry.getFilename().equals("..")))
-            {
-                System.out.println("Directory Name: "+lsEntry.getFilename());
-                try
-                {
-                    totalNumberOfReports.add(Integer.valueOf(lsEntry.getFilename()));
-                }
-                catch (Exception e)
-                {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
 
     public void getFile(String sourceFilePath,String destinationFilePath)
     {
@@ -128,7 +112,7 @@ public class DownloadOperations
         }
     }
 
-    private void getTargetDataFromJsonFileAndRenameIt(File localFile,String localDirectoryName) throws IOException
+    private void getTargetDataFromJsonFileAndRenameIt(File localFile,String localDirectory) throws IOException
     {
         byte[] mapByteData = Files.readAllBytes(Paths.get(localFile.getAbsolutePath()));
 
@@ -136,7 +120,7 @@ public class DownloadOperations
         JsonNode rootNode =objectMapper.readTree(mapByteData);
         String sha256=rootNode.path("target").path("file").path("sha256").textValue();
         int threatScore=Math.round(rootNode.path("info").path("score").floatValue());
-        String newFileName=localDirectoryName+"/"+sha256+"-"+threatScore+".json";
+        String newFileName=localDirectory+"/"+sha256+"-"+threatScore+".json";
         localFile.renameTo(new File(newFileName));
 
         System.out.println("sha256 "+sha256);
