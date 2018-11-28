@@ -3,20 +3,16 @@ package com.networking.download;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jcraft.jsch.*;
-import com.networking.config.RemoteHostProperties;
 import com.networking.util.RemoteOperationsUtil;
-import org.springframework.boot.json.JacksonJsonParser;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Vector;
 
 public class DownloadOperations
