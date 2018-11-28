@@ -22,7 +22,7 @@
     "operatingSystem": "Ubuntu"
   },
   {
-    "malwareFilesDirectory": "/Users/malwarecuckoo2/Desktop/VirusShare/VirusShare_00320/",
+    "malwareFilesDirectory": "/Users/malwarecuckoo2/Desktop/VirusShare_00320/",
     "reportsDirectory": "/Users/malwarecuckoo2/.cuckoo/storage/analyses/",
     "ipAddress": "192.168.1.125",
     "localTempFilePath": "/Users/malwarecuckoo2/test/report.json",
@@ -33,7 +33,7 @@
     "operatingSystem": "macOS"
   },
   {
-    "malwareFilesDirectory": "/Users/malwarecuckoo1/Desktop/VirusShare/VirusShare_00321/",
+    "malwareFilesDirectory": "/Users/malwarecuckoo1/Desktop/VirusShare_00321/",
     "reportsDirectory": "/Users/malwarecuckoo1/.cuckoo/storage/analyses/",
     "ipAddress": "192.168.1.126",
     "localTempFilePath": "/Users/malwarecuckoo1/test/report.json",

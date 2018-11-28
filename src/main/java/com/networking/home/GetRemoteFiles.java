@@ -27,11 +27,11 @@ public class GetRemoteFiles
         RemoteHost remoteHost=remoteHostAtomicReference.get();
 
         DownloadOperations downloadOperations= new DownloadOperations(remoteHost.getUsername(),remoteHost.getPassword(),remoteHost.getIpAddress());
-        downloadOperations.copyFilesFromDirectory(remoteHost.getReportsDirectory(),"/home/cuckoo/Desktop/MalwareReports/");
+        //downloadOperations.copyFilesFromDirectory(remoteHost.getReportsDirectory(),"/home/cuckoo/Desktop/MalwareReports/");
         //downloadOperations.listFilesInDirectory(remoteHost.getReportsDirectory());
 
-        DeleteAnalyzedMalwareFiles deleteAnalyzedMalwareFiles=new DeleteAnalyzedMalwareFiles();
-        //deleteAnalyzedMalwareFiles.deleteAnalyzedFiles("/home/cuckoo/Desktop/VirusShare/VirusShare_00000/","/home/cuckoo/.cuckoo/storage/analyses/");
+        DeleteAnalyzedMalwareFiles deleteAnalyzedMalwareFiles=new DeleteAnalyzedMalwareFiles(remoteHost.getUsername(),remoteHost.getPassword(),remoteHost.getIpAddress());
+        deleteAnalyzedMalwareFiles.deleteAnalyzedFiles(remoteHost.getMalwareFilesDirectory(),remoteHost.getReportsDirectory());
         //deleteAnalyzedMalwareFiles.deleteAnalyzedFilesFromLocalCustomDirectory("/home/cuckoo/Desktop/VirusShare_00322", "/home/cuckoo/.cuckoo/reports-backup/malwares");
     }
 
