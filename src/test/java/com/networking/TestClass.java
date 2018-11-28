@@ -47,7 +47,7 @@ public class TestClass
             assert fileList != null;
             for (File fileEntry : fileList)
             {
-                if (!fileEntry.isDirectory() && (threadScoreExistsInFileName(fileEntry.getName())))
+                if (!fileEntry.isDirectory() && (!threadScoreExistsInFileName(fileEntry.getName())))
                 {
                     String newFileName=getNewFileName(fileEntry,localDirectory);
                     System.out.println("new File Name: " + newFileName);
