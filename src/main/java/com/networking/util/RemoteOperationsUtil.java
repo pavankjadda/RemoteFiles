@@ -3,9 +3,6 @@ package com.networking.util;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jcraft.jsch.ChannelSftp;
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
 import com.networking.config.RemoteHost;
 import org.springframework.core.io.ClassPathResource;
 
@@ -20,31 +17,10 @@ import java.util.Vector;
 
 public class RemoteOperationsUtil
 {
-    private ChannelSftp channelSftp = null;
-    private RemoteHost remoteHost = null;
 
     public RemoteOperationsUtil()
     {
 
-    }
-
-    public RemoteOperationsUtil(RemoteHost remoteHost)
-    {
-        JSch jSch = new JSch();
-        try
-        {
-            Session session = jSch.getSession(remoteHost.getUsername(), remoteHost.getIpAddress());
-            session.setPassword(remoteHost.getPassword());
-            session.setConfig("StrictHostKeyChecking", "no");
-            session.connect();
-
-            this.channelSftp = (ChannelSftp) session.openChannel("sftp");
-            channelSftp.connect();
-            this.remoteHost = remoteHost;
-        } catch (JSchException e)
-        {
-            e.printStackTrace();
-        }
     }
 
     public void getDirectoryNumbers(Vector directories, List<Integer> reportsDirectoryNumbers)
@@ -57,7 +33,8 @@ public class RemoteOperationsUtil
                 try
                 {
                     reportsDirectoryNumbers.add(Integer.valueOf(lsEntry.getFilename()));
-                } catch (Exception e)
+                }
+                catch (Exception e)
                 {
                     e.printStackTrace();
                 }
@@ -80,7 +57,8 @@ public class RemoteOperationsUtil
                     System.out.println("File " + fileEntry.getAbsolutePath() + " moved to " + (destination + fileEntry.getName()));
                 }
             }
-        } catch (Exception e)
+        }
+        catch (Exception e)
         {
             e.printStackTrace();
         }
@@ -95,14 +73,15 @@ public class RemoteOperationsUtil
         {
             file = new ClassPathResource("remote_hosts.json").getFile();
             remoteHosts = mapJsonToObject(file);
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             e.printStackTrace();
         }
         return remoteHosts;
     }
 
-    public List<RemoteHost> mapJsonToObject(File file)
+    private List<RemoteHost> mapJsonToObject(File file)
     {
         List<RemoteHost> remoteHosts = new ArrayList<>();
         try
@@ -113,7 +92,8 @@ public class RemoteOperationsUtil
             {
                 remoteHosts.add(objectMapper.readValue(jsonNode.toString(), RemoteHost.class));
             }
-        } catch (Exception e)
+        }
+        catch (Exception e)
         {
             e.printStackTrace();
         }
