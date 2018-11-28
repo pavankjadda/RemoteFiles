@@ -44,25 +44,7 @@ public class DownloadOperations
         }
     }
 
-    public void listFilesInDirectory(String directoryName)
-    {
 
-        Vector files;
-        try
-        {
-            files = channelSftp.ls(directoryName);
-            for (Object file : files)
-            {
-                ChannelSftp.LsEntry lsEntry = (ChannelSftp.LsEntry) file;
-                System.out.println(lsEntry.getFilename() + " is directory? " + lsEntry.getAttrs().isDir());
-            }
-        }
-
-        catch (SftpException e)
-        {
-            e.printStackTrace();
-        }
-    }
 
     public void copyReportsFromRemoteToLocalDirectory(String remoteDirectory,String localDirectory)
     {
@@ -95,18 +77,36 @@ public class DownloadOperations
         System.out.println("Files Transfer Success");
     }
 
-
-    public void getFile(String sourceFilePath,String destinationFilePath)
+    public void copyReportsFromLocalCuckooToLocalDirectory(String localCuckooDirectory,String localDirectory)
     {
+        List<Integer> reportsDirectoryNumbers=new ArrayList<>();
         try
         {
-            channelSftp.get(sourceFilePath,destinationFilePath);
-            System.out.println("File transferred successfully");
-        }
+            getLocalCuckooDirectoryNumbers(localCuckooDirectory,reportsDirectoryNumbers);
+            for(Integer directoryNumber:reportsDirectoryNumbers)
+            {
+                String localCuckooFilePath=localCuckooDirectory+directoryNumber+"/reports/report.json";
+                String localFilePath=localDirectory+"report.json";
+                Files.copy(Paths.get(localCuckooFilePath),Paths.get(localDirectory));
 
-        catch (SftpException e)
+                getTargetDataFromJsonFileAndRenameIt(new File(localFilePath),localDirectory);
+            }
+        }
+        catch (Exception e)
         {
             e.printStackTrace();
+        }
+        System.out.println("Files Transfer Success");
+    }
+
+    private void getLocalCuckooDirectoryNumbers(String localCuckooDirectory, List<Integer> reportsDirectoryNumbers)
+    {
+        File[] listFiles=new File(localCuckooDirectory).listFiles();
+        assert listFiles != null;
+        for(File file:listFiles)
+        {
+            if(!file.isDirectory())
+                reportsDirectoryNumbers.add(Integer.valueOf(file.getName()));
         }
     }
 
@@ -124,4 +124,23 @@ public class DownloadOperations
         System.out.println("sha256 "+sha256);
     }
 
+    public void listFilesInRemoteDirectory(String directoryName)
+    {
+
+        Vector files;
+        try
+        {
+            files = channelSftp.ls(directoryName);
+            for (Object file : files)
+            {
+                ChannelSftp.LsEntry lsEntry = (ChannelSftp.LsEntry) file;
+                System.out.println(lsEntry.getFilename() + " is directory? " + lsEntry.getAttrs().isDir());
+            }
+        }
+
+        catch (SftpException e)
+        {
+            e.printStackTrace();
+        }
+    }
 }
