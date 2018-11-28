@@ -2,6 +2,7 @@ package com.networking;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.networking.util.RemoteOperationsUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,18 +17,8 @@ public class TestClass
     {
         try
         {
-            File file = new File("/home/cuckoo/Desktop/MalwareReports");
-            String destinationDirectory = "/media/cuckoo/VirusShare/Malware_JSON_Reports/malwares/";
-            File[] fileList = file.listFiles();
-            assert fileList != null;
-            for (File fileEntry : fileList)
-            {
-                if (!fileEntry.isDirectory())
-                {
-                    Files.move(Paths.get(fileEntry.getAbsolutePath()), Paths.get(destinationDirectory + fileEntry.getName()));
-                    System.out.println("File " + fileEntry.getAbsolutePath() + " moved to " + (destinationDirectory + fileEntry.getName()));
-                }
-            }
+            RemoteOperationsUtil remoteOperationsUtil=new RemoteOperationsUtil();
+            remoteOperationsUtil.moveFiles("/home/cuckoo/Desktop/MalwareReports","/media/cuckoo/VirusShare/Malware_JSON_Reports/malwares/");
         }
         catch (Exception e)
         {
@@ -36,47 +27,4 @@ public class TestClass
     }
 
 
-
-    private static String getNewFileName(File fileEntry, String localDirectory) throws IOException
-    {
-        byte[] mapByteData = Files.readAllBytes(Paths.get(fileEntry.getAbsolutePath()));
-        ObjectMapper objectMapper = new ObjectMapper();
-        JsonNode rootNode = objectMapper.readTree(mapByteData);
-        String sha256 = rootNode.path("target").path("file").path("sha256").textValue();
-        int threatScore = Math.round(rootNode.path("info").path("score").floatValue());
-        return localDirectory+ sha256 + "-" + threatScore + ".json";
-    }
-
-    private static boolean threadScoreExistsInFileName(String fileName)
-    {
-        final String regex = "[a-zA-Z0-9]+[-][0-9]+.json";
-        final Pattern pattern = Pattern.compile(regex, Pattern.MULTILINE);
-        final Matcher matcher = pattern.matcher(fileName);
-        //System.out.println("Full match: " + matcher.group(0));
-        return matcher.find();
-    }
-
-    private static void renameFilesWithThreatScore()
-    {
-        try
-        {
-            String localDirectory = "/media/cuckoo/VirusShare/Malware_JSON_Reports/malwares/";
-            File file = new File(localDirectory);
-            File[] fileList = file.listFiles();
-            assert fileList != null;
-            for (File fileEntry : fileList)
-            {
-                if (!fileEntry.isDirectory() && (!threadScoreExistsInFileName(fileEntry.getName())))
-                {
-                    String newFileName=getNewFileName(fileEntry,localDirectory);
-                    System.out.println("Old File Name "+fileEntry.getName()+"  and new File Name: " + newFileName);
-                    fileEntry.renameTo(new File(newFileName));
-                }
-            }
-        } catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-
-    }
 }

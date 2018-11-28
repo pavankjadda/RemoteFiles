@@ -3,6 +3,7 @@ package com.networking.download;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jcraft.jsch.*;
+import com.networking.config.RemoteHost;
 import com.networking.util.RemoteOperationsUtil;
 
 import java.io.File;
@@ -19,21 +20,22 @@ public class DownloadOperations
 {
     private ChannelSftp channelSftp=null;
     private RemoteOperationsUtil remoteOperationsUtil=null;
+    private RemoteHost remoteHost = null;
 
-    public DownloadOperations(String username, String password, String targetIpAddress)
+    public DownloadOperations(RemoteHost remoteHost)
     {
         JSch jSch=new JSch();
         try
         {
-            Session session=jSch.getSession(username,targetIpAddress);
-            session.setPassword(password);
+            Session session=jSch.getSession(remoteHost.getUsername(),remoteHost.getIpAddress());
+            session.setPassword(remoteHost.getPassword());
             session.setConfig("StrictHostKeyChecking","no");
             session.connect();
 
             this.channelSftp= (ChannelSftp) session.openChannel("sftp");
             channelSftp.connect();
-            this.remoteOperationsUtil=new RemoteOperationsUtil();
-
+            this.remoteOperationsUtil=new RemoteOperationsUtil(remoteHost);
+            this.remoteHost=remoteHost;
         }
 
         catch (JSchException e)
@@ -62,7 +64,7 @@ public class DownloadOperations
         }
     }
 
-    public void copyFilesFromDirectory(String remoteDirectory,String localDirectory)
+    public void copyReportsFromRemoteToLocalDirectory(String remoteDirectory,String localDirectory)
     {
         Vector directories;
         List<Integer> reportsDirectoryNumbers=new ArrayList<>();
@@ -120,7 +122,6 @@ public class DownloadOperations
         localFile.renameTo(new File(newFileName));
 
         System.out.println("sha256 "+sha256);
-        System.out.println("threat score "+threatScore);
     }
 
 }

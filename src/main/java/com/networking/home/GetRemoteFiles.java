@@ -4,7 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.networking.config.RemoteHost;
 import com.networking.download.DownloadOperations;
-import com.networking.upload.DeleteAnalyzedMalwareFiles;
+import com.networking.upload.DeleteOperations;
+import com.networking.util.RemoteOperationsUtil;
 import org.springframework.core.io.ClassPathResource;
 
 import java.io.File;
@@ -21,18 +22,20 @@ public class GetRemoteFiles
         List<RemoteHost> remoteHosts=getRemoteHostsDetails();
         AtomicReference<RemoteHost> remoteHostAtomicReference=new AtomicReference<>();
         remoteHosts.forEach(remoteHost1 -> {
-            if(remoteHost1.getIpAddress().equals("192.168.1.125"))
+            if(remoteHost1.getIpAddress().equals("192.168.1.120"))
                 remoteHostAtomicReference.set(remoteHost1);
         });
         RemoteHost remoteHost=remoteHostAtomicReference.get();
 
-        DownloadOperations downloadOperations= new DownloadOperations(remoteHost.getUsername(),remoteHost.getPassword(),remoteHost.getIpAddress());
-        //downloadOperations.copyFilesFromDirectory(remoteHost.getReportsDirectory(),"/home/cuckoo/Desktop/MalwareReports/");
-        //downloadOperations.listFilesInDirectory(remoteHost.getReportsDirectory());
+        DownloadOperations downloadOperations= new DownloadOperations(remoteHost);
+        downloadOperations.copyReportsFromRemoteToLocalDirectory(remoteHost.getReportsDirectory(),"/home/cuckoo/Desktop/MalwareReports/");
 
-        DeleteAnalyzedMalwareFiles deleteAnalyzedMalwareFiles=new DeleteAnalyzedMalwareFiles(remoteHost.getUsername(),remoteHost.getPassword(),remoteHost.getIpAddress());
-        deleteAnalyzedMalwareFiles.deleteAnalyzedFiles(remoteHost.getMalwareFilesDirectory(),remoteHost.getReportsDirectory());
-        //deleteAnalyzedMalwareFiles.deleteAnalyzedFilesFromLocalCustomDirectory("/home/cuckoo/Desktop/VirusShare_00322", "/home/cuckoo/.cuckoo/reports-backup/malwares");
+        DeleteOperations deleteOperation=new DeleteOperations(remoteHost);
+        //deleteOperation.deleteAnalyzedFiles(remoteHost.getMalwareFilesDirectory(),remoteHost.getReportsDirectory());
+
+        //Move files
+        RemoteOperationsUtil remoteOperationsUtil=new RemoteOperationsUtil(remoteHost);
+        //remoteOperationsUtil.moveFiles("/home/cuckoo/Desktop/MalwareReports","/media/cuckoo/VirusShare/Malware_JSON_Reports/malwares/");
     }
 
     private static List<RemoteHost> getRemoteHostsDetails()

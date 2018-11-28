@@ -3,7 +3,7 @@ package com.networking.upload;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jcraft.jsch.*;
-import com.networking.config.RemoteHostProperties;
+import com.networking.config.RemoteHost;
 import com.networking.util.RemoteOperationsUtil;
 
 import java.io.File;
@@ -15,25 +15,26 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Vector;
 
-public class DeleteAnalyzedMalwareFiles
+public class DeleteOperations
 {
     private ChannelSftp channelSftp = null;
     private RemoteOperationsUtil remoteOperationsUtil = null;
+    private RemoteHost remoteHost=null;
 
-    public DeleteAnalyzedMalwareFiles(String username, String password, String targetIpAddress)
+    public DeleteOperations(RemoteHost remoteHost)
     {
         JSch jSch=new JSch();
         try
         {
-            Session session=jSch.getSession(username,targetIpAddress);
-            session.setPassword(password);
+            Session session=jSch.getSession(remoteHost.getUsername(),remoteHost.getIpAddress());
+            session.setPassword(remoteHost.getPassword());
             session.setConfig("StrictHostKeyChecking","no");
             session.connect();
 
             this.channelSftp= (ChannelSftp) session.openChannel("sftp");
             channelSftp.connect();
-            this.remoteOperationsUtil=new RemoteOperationsUtil();
-
+            this.remoteOperationsUtil=new RemoteOperationsUtil(remoteHost);
+            this.remoteHost=remoteHost;
         }
 
         catch (JSchException e)
@@ -60,22 +61,92 @@ public class DeleteAnalyzedMalwareFiles
             int i = 1;
             for (Integer directoryNumber : reportsDirectoryNumbers)
             {
-                String remoteFilePath = remoteReportsDirectory + directoryNumber + "/reports/report.json";
+                String remoteFilePath = remoteReportsDirectory + directoryNumber + "/task.json";
                 //Get Malware filename from Cuckoo Report
-                String malwareFileNameFromReport = getMalwareFileNameFromReport(remoteFilePath);
+                String malwareFileNameFromReport = getFileNameFromTaskJsonFile(remoteFilePath);
                 if (isFileExistsInAnalyzedFiles(malwareFileNameFromReport, malwareFileNamesFromMalwareDirectory))
                 {
                     channelSftp.rm(remoteMalwaresDirectory + malwareFileNameFromReport);
                     System.out.println(i + " :File " + malwareFileNameFromReport + " present in " + remoteMalwaresDirectory + " directory, so deleting file");
                 }
-                System.out.println("Index :" + (i++));
+                else
+                    System.out.println("Index :" + i);
+                i++;
             }
-        } catch (Exception e)
+        }
+        catch (Exception e)
         {
             e.printStackTrace();
         }
         System.out.println("End of deleteAnalyzedFiles() method");
     }
+
+
+    private boolean isFileExistsInAnalyzedFiles(String malwareFileName, List<String> malwareFileNamesFromMalwareDirectory)
+    {
+        return malwareFileNamesFromMalwareDirectory.contains(malwareFileName);
+    }
+
+    private void getMalwareFileNamesFromMalwareDirectory(String remoteMalwaresDirectory, List<String> malwareFileNamesFromMalwareDirectory)
+    {
+        Vector files;
+        try
+        {
+            files = channelSftp.ls(remoteMalwaresDirectory);
+            for (Object object : files)
+            {
+                ChannelSftp.LsEntry file = (ChannelSftp.LsEntry) object;
+                if (!file.getAttrs().isDir())
+                    malwareFileNamesFromMalwareDirectory.add(file.getFilename());
+            }
+        } catch (SftpException e)
+        {
+            e.printStackTrace();
+        }
+        System.out.println("Total Number of Malwares in Directory => " + malwareFileNamesFromMalwareDirectory.size());
+    }
+
+
+    private String getMalwareFileNameFromReport(String remoteFilePath) throws IOException
+    {
+        try
+        {
+            String localFilePath = remoteHost.getLocalTempFilePath();
+            channelSftp.get(remoteFilePath, localFilePath);
+
+            byte[] fileByteData = Files.readAllBytes(Paths.get(localFilePath));
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode rootNode = objectMapper.readTree(fileByteData);
+            return rootNode.path("target").path("file").path("name").textValue();
+        } catch (SftpException e)
+        {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private String getFileNameFromTaskJsonFile(String remoteFilePath) throws IOException
+    {
+        String localFilePath = remoteHost.getLocalTempFilePath();
+        try
+        {
+            channelSftp.get(remoteFilePath, localFilePath);
+        }
+
+        catch (SftpException e)
+        {
+            e.printStackTrace();
+        }
+        byte[] mapByteData = Files.readAllBytes(Paths.get(localFilePath));
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode rootNode = objectMapper.readTree(mapByteData);
+        String remoteFileAbsolutePath=rootNode.path("target").textValue();
+        String[] splitString=remoteFileAbsolutePath.split("/");
+        return splitString[splitString.length-1];
+    }
+
+
+
 
     public void deleteAnalyzedFilesFromLocalCustomDirectory(String localMalwaresDirectory, String localReportsDirectory)
     {
@@ -151,52 +222,6 @@ public class DeleteAnalyzedMalwareFiles
             e.printStackTrace();
         }
         return malwareFileNameFromReport;
-    }
-
-
-
-
-    private boolean isFileExistsInAnalyzedFiles(String malwareFileName, List<String> malwareFileNamesFromMalwareDirectory)
-    {
-        return malwareFileNamesFromMalwareDirectory.contains(malwareFileName);
-    }
-
-    private void getMalwareFileNamesFromMalwareDirectory(String remoteMalwaresDirectory, List<String> malwareFileNamesFromMalwareDirectory)
-    {
-        Vector files;
-        try
-        {
-            files = channelSftp.ls(remoteMalwaresDirectory);
-            for (Object object : files)
-            {
-                ChannelSftp.LsEntry file = (ChannelSftp.LsEntry) object;
-                if (!file.getAttrs().isDir())
-                    malwareFileNamesFromMalwareDirectory.add(file.getFilename());
-            }
-        } catch (SftpException e)
-        {
-            e.printStackTrace();
-        }
-        System.out.println("Total Number of Malwares in Directory => " + malwareFileNamesFromMalwareDirectory.size());
-    }
-
-
-    private String getMalwareFileNameFromReport(String remoteFilePath) throws IOException
-    {
-        try
-        {
-            String localFilePath = RemoteHostProperties.localTempFilePath;
-            channelSftp.get(remoteFilePath, localFilePath);
-
-            byte[] fileByteData = Files.readAllBytes(Paths.get(localFilePath));
-            ObjectMapper objectMapper = new ObjectMapper();
-            JsonNode rootNode = objectMapper.readTree(fileByteData);
-            return rootNode.path("target").path("file").path("name").textValue();
-        } catch (SftpException e)
-        {
-            e.printStackTrace();
-        }
-        return null;
     }
 
 
