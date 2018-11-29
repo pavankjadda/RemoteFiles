@@ -25,7 +25,7 @@ public class UploadOperations
 
             this.channelSftp= (ChannelSftp) session.openChannel("sftp");
             channelSftp.connect();
-            this.remoteOperationsUtil=new RemoteOperationsUtil(remoteHost);
+            this.remoteOperationsUtil=new RemoteOperationsUtil();
             this.remoteHost=remoteHost;
         }
 
