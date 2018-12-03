@@ -49,7 +49,8 @@ public class DownloadOperations
 
 
 
-    public void copyReportsFromRemoteToLocalDirectory(String remoteDirectory,String localDirectory)
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    public void copyReportsFromRemoteToLocalDirectory(String remoteDirectory, String localDirectory)
     {
         Vector directories;
         List<Integer> reportsDirectoryNumbers=new ArrayList<>();
@@ -59,20 +60,27 @@ public class DownloadOperations
             remoteOperationsUtil.getDirectoryNumbers(directories,reportsDirectoryNumbers);
             for(Integer directoryNumber:reportsDirectoryNumbers)
             {
-                String remoteFilePath=remoteDirectory+directoryNumber+"/reports/report.json";
-                String localFilePath=localDirectory+"report.json";
-                File localFile=new File(localFilePath);
-                if(localFile.exists())
-                    localFile.delete();
-                new File(localFilePath).createNewFile();
-                InputStream in=channelSftp.get(remoteFilePath);
-                Files.copy(in, localFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                System.out.println(remoteFilePath+" File Copied to Location -> "+localFilePath);
-                localOperationsUtil.getTargetDataFromJsonFileAndRenameIt(localFile,localDirectory);
+                try
+                {
+                    String remoteFilePath=remoteDirectory+directoryNumber+"/reports/report.json";
+                    String localFilePath=localDirectory+"report.json";
+                    File localFile=new File(localFilePath);
+                    if(localFile.exists())
+                        localFile.delete();
+                    new File(localFilePath).createNewFile();
+                    InputStream in=channelSftp.get(remoteFilePath);
+                    Files.copy(in, localFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                    System.out.println(remoteFilePath+" File Copied to Location -> "+localFilePath);
+                    localOperationsUtil.getTargetDataFromJsonFileAndRenameIt(localFile,localDirectory);
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
             }
         }
 
-        catch (SftpException | IOException e)
+        catch (Exception e)
         {
             e.printStackTrace();
         }

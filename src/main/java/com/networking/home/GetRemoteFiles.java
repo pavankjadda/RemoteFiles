@@ -1,6 +1,7 @@
 package com.networking.home;
 
 import com.networking.config.RemoteHost;
+import com.networking.delete.DeleteOperations;
 import com.networking.download.DownloadOperations;
 import com.networking.util.RemoteOperationsUtil;
 
@@ -16,7 +17,7 @@ public class GetRemoteFiles
         AtomicReference<RemoteHost> remoteHostAtomicReference=new AtomicReference<>();
         for (RemoteHost remoteHost1 : remoteHosts)
         {
-            if (remoteHost1.getIpAddress().equals("192.168.1.120"))
+            if (remoteHost1.getIpAddress().equals("192.168.1.125"))
             {
                 remoteHostAtomicReference.set(remoteHost1);
             }
@@ -24,10 +25,11 @@ public class GetRemoteFiles
         RemoteHost remoteHost=remoteHostAtomicReference.get();
 
         DownloadOperations downloadOperations= new DownloadOperations(remoteHost);
-        //downloadOperations.copyReportsFromRemoteToLocalDirectory(remoteHost.getReportsDirectory(),"/home/cuckoo/Desktop/MalwareReports/");
-        downloadOperations.copyReportsFromLocalCuckooToLocalDirectory("/home/cuckoo/.cuckoo/storage/analyses/","/media/cuckoo/VirusShare/Malware_JSON_Reports/malwares/");
+        downloadOperations.copyReportsFromRemoteToLocalDirectory(remoteHost.getReportsDirectory(),"/home/cuckoo/Desktop/MalwareReports/");
+        //downloadOperations.copyReportsFromLocalCuckooToLocalDirectory("/home/cuckoo/.cuckoo/storage/analyses/","/media/cuckoo/VirusShare/Malware_JSON_Reports/malwares/");
 
-        //DeleteOperations deleteOperation=new DeleteOperations(remoteHost);
+        DeleteOperations deleteOperation=new DeleteOperations(remoteHost);
+        //deleteOperation.deleteAnalyzedFilesFromLocalMalwareDirectory("/home/cuckoo/Desktop/VirusShare_00322/","/home/cuckoo/.cuckoo/storage/analyses/");
         //deleteOperation.deleteAnalyzedFiles(remoteHost.getMalwareFilesDirectory(),remoteHost.getReportsDirectory());
 
          /* Move files */

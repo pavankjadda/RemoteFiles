@@ -64,17 +64,25 @@ public class DeleteOperations
             int i = 1;
             for (Integer directoryNumber : reportsDirectoryNumbers)
             {
-                String remoteFilePath = remoteReportsDirectory + directoryNumber + "/task.json";
-                //Get Malware filename from Cuckoo Report
-                String malwareFileNameFromReport = getFileNameFromTaskJsonFile(remoteFilePath);
-                if (isFileExistsInAnalyzedFiles(malwareFileNameFromReport, malwareFileNamesFromMalwareDirectory))
+                try
                 {
-                    channelSftp.rm(remoteMalwaresDirectory + malwareFileNameFromReport);
-                    System.out.println(i + " :File " + malwareFileNameFromReport + " present in " + remoteMalwaresDirectory + " directory, so deleting file");
+                    String remoteFilePath = remoteReportsDirectory + directoryNumber + "/task.json";
+                    //Get Malware filename from Cuckoo Report
+                    String malwareFileNameFromReport = getFileNameFromTaskJsonFile(remoteFilePath);
+                    if (isFileExistsInAnalyzedFiles(malwareFileNameFromReport, malwareFileNamesFromMalwareDirectory))
+                    {
+                        channelSftp.rm(remoteMalwaresDirectory + malwareFileNameFromReport);
+                        System.out.println(i + " :File " + malwareFileNameFromReport + " present in " + remoteMalwaresDirectory + " directory, so deleting file");
+                    }
+                    else
+                        System.out.println("Index :" + i);
+                    i++;
                 }
-                else
-                    System.out.println("Index :" + i);
-                i++;
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
+
             }
         }
         catch (Exception e)
@@ -137,7 +145,8 @@ public class DeleteOperations
     /* Delete Malware files from Local Malware Directory*/
     public void deleteAnalyzedFilesFromLocalMalwareDirectory(String localMalwaresDirectory, String localCuckooDirectory)
     {
-
+        List<String> malwareFileNamesFromMalwareDirectory=new ArrayList<>();
+        localOperationsUtil.getMalwareFileNamesFromLocalDirectory(localMalwaresDirectory,malwareFileNamesFromMalwareDirectory);
         List<Integer> reportsDirectoryNumbers=new ArrayList<>();
         try
         {
@@ -147,15 +156,16 @@ public class DeleteOperations
             {
                 String localTaskJsonFilePath=localCuckooDirectory+directoryNumber+"/task.json";
                 String malwareFileNameFromReport=getMalwareNameFromLocalTaskJsonReport(localTaskJsonFilePath);
-                localOperationsUtil.deleteLocalFile(localMalwaresDirectory,malwareFileNameFromReport);
+                localOperationsUtil.deleteLocalFile(malwareFileNamesFromMalwareDirectory,malwareFileNameFromReport,localMalwaresDirectory);
+                i++;
             }
+            System.out.println("Total Deleted Files: "+i);
         }
         catch (Exception e)
         {
             e.printStackTrace();
         }
-        System.out.println("Files Transfer Success");
-        System.out.println("End of Local deleteAnalyzedFiles() method");
+        System.out.println("End of deleteAnalyzedFilesFromLocalMalwareDirectory() method");
     }
 
 
@@ -164,19 +174,20 @@ public class DeleteOperations
 
     private String getMalwareNameFromLocalTaskJsonReport(String fileAbsolutePath)
     {
-        String malwareFileNameFromReport = null;
+        byte[] mapByteData;
         try
         {
-            byte[] fileByteData = Files.readAllBytes(Paths.get(fileAbsolutePath));
+            mapByteData = Files.readAllBytes(Paths.get(fileAbsolutePath));
             ObjectMapper objectMapper = new ObjectMapper();
-            JsonNode rootNode = objectMapper.readTree(fileByteData);
-            malwareFileNameFromReport = rootNode.path("target").path("file").path("name").textValue();
-        } catch (Exception e)
+            JsonNode rootNode = objectMapper.readTree(mapByteData);
+            String remoteFileAbsolutePath = rootNode.path("target").textValue();
+            String[] splitString = remoteFileAbsolutePath.split("/");
+            return splitString[splitString.length - 1];
+        }
+        catch (IOException e)
         {
             e.printStackTrace();
         }
-        return malwareFileNameFromReport;
+        return null;
     }
-
-
 }

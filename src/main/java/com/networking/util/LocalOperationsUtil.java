@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.Objects;
 
 public class LocalOperationsUtil
 {
@@ -33,6 +32,7 @@ public class LocalOperationsUtil
                 e.printStackTrace();
             }
         }
+        System.out.println("Total Directories: "+reportsDirectoryNumbers.size());
     }
 
     public void getTargetDataFromJsonFileAndRenameIt(File localFile,String localDirectory) throws IOException
@@ -63,17 +63,13 @@ public class LocalOperationsUtil
         }
     }
 
-    public void deleteLocalFile(String localMalwaresDirectory, String malwareFileNameFromReport)
+    public void deleteLocalFile(List<String> malwareFileNamesFromMalwareDirectory, String malwareFileNameFromReport,String localMalwaresDirectory)
     {
-        File file = new File(localMalwaresDirectory);
-        for (File fileEntry : Objects.requireNonNull(file.listFiles()))
-        {
-            if (!fileEntry.isDirectory() && fileEntry.getName().equals(malwareFileNameFromReport))
+        if (malwareFileNamesFromMalwareDirectory.contains(malwareFileNameFromReport))
             {
-                //fileEntry.delete();
+                new File(localMalwaresDirectory+malwareFileNameFromReport).delete();
                 System.out.println("File deleted: " + malwareFileNameFromReport);
-
             }
-        }
     }
 }
+
