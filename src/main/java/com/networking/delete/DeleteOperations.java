@@ -71,7 +71,7 @@ public class DeleteOperations
                     String malwareFileNameFromReport = getFileNameFromTaskJsonFile(remoteFilePath);
                     if (isFileExistsInAnalyzedFiles(malwareFileNameFromReport, malwareFileNamesFromMalwareDirectory))
                     {
-                        channelSftp.rm(remoteMalwaresDirectory + malwareFileNameFromReport);
+                        //channelSftp.rm(remoteMalwaresDirectory + malwareFileNameFromReport);
                         System.out.println(i + " :File " + malwareFileNameFromReport + " present in " + remoteMalwaresDirectory + " directory, so deleting file");
                     }
                     else

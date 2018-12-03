@@ -8,8 +8,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class DownloadThread implements Runnable
 {
-    private String threadName = null;
-    private RemoteHost remoteHost = null;
+    private String threadName;
+    private RemoteHost remoteHost;
     private Thread t=null;
 
     public DownloadThread(String threadName, String ipAddress)
@@ -51,6 +51,6 @@ public class DownloadThread implements Runnable
             t=new Thread(this,"DownloadThread-"+threadName);
             t.start();
         }
+        t.start();
     }
-    
 }

@@ -8,8 +8,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class DeleteThread implements Runnable
 {
-    private String threadName = null;
-    private RemoteHost remoteHost = null;
+    private String threadName;
+    private RemoteHost remoteHost;
     private Thread t=null;
 
     public DeleteThread(String threadName, String ipAddress)
@@ -41,8 +41,7 @@ public class DeleteThread implements Runnable
         System.out.println("Executing Thread: "+threadName + " inside DeleteThread");
 
         //deleteOperation.deleteAnalyzedFilesFromLocalMalwareDirectory("/home/cuckoo/Desktop/VirusShare_00322/","/home/cuckoo/.cuckoo/storage/analyses/");
-        //deleteOperation.deleteAnalyzedFiles(remoteHost.getMalwareFilesDirectory(),remoteHost.getReportsDirectory());
-
+        deleteOperation.deleteAnalyzedFiles(remoteHost.getMalwareFilesDirectory(),remoteHost.getReportsDirectory());
     }
 
 
@@ -53,5 +52,6 @@ public class DeleteThread implements Runnable
             t=new Thread(this,"DeleteThread-"+threadName);
             t.start();
         }
+        t.start();
     }
 }
