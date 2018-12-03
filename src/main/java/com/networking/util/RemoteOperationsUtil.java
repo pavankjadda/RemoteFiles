@@ -44,28 +44,6 @@ public class RemoteOperationsUtil
         }
     }
 
-    public void moveFiles(String source, String destination)
-    {
-        try
-        {
-            File file = new File(source);
-            File[] fileList = file.listFiles();
-            assert fileList != null;
-            for (File fileEntry : fileList)
-            {
-                if (!fileEntry.isDirectory())
-                {
-                    Files.move(Paths.get(fileEntry.getAbsolutePath()), Paths.get(destination + fileEntry.getName()), StandardCopyOption.REPLACE_EXISTING);
-                    System.out.println("File " + fileEntry.getAbsolutePath() + " moved to " + (destination + fileEntry.getName()));
-                }
-            }
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-    }
-
 
     public List<RemoteHost> getRemoteHostsDetails()
     {

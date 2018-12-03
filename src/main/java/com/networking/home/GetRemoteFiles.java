@@ -1,45 +1,19 @@
 package com.networking.home;
 
-import com.networking.config.RemoteHost;
-import com.networking.delete.DeleteOperations;
-import com.networking.download.DownloadOperations;
-import com.networking.util.RemoteOperationsUtil;
-
-import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
+import com.networking.delete.DeleteThread;
+import com.networking.download.DownloadThread;
 
 public class GetRemoteFiles
 {
     public static void main(String[] args)
     {
-        RemoteOperationsUtil remoteOperationsUtil=new RemoteOperationsUtil();
-        List<RemoteHost> remoteHosts=remoteOperationsUtil.getRemoteHostsDetails();
-        AtomicReference<RemoteHost> remoteHostAtomicReference=new AtomicReference<>();
-        for (RemoteHost remoteHost1 : remoteHosts)
-        {
-            if (remoteHost1.getIpAddress().equals("192.168.1.125"))
-            {
-                remoteHostAtomicReference.set(remoteHost1);
-            }
-        }
-        RemoteHost remoteHost=remoteHostAtomicReference.get();
+        //Start Delete Thread
+        DownloadThread downloadThread=new DownloadThread("192.168.1.126","192.168.1.126");
+        downloadThread.start();
 
-        DownloadOperations downloadOperations= new DownloadOperations(remoteHost);
-        downloadOperations.copyReportsFromRemoteToLocalDirectory(remoteHost.getReportsDirectory(),"/home/cuckoo/Desktop/MalwareReports/");
-        //downloadOperations.copyReportsFromLocalCuckooToLocalDirectory("/home/cuckoo/.cuckoo/storage/analyses/","/media/cuckoo/VirusShare/Malware_JSON_Reports/malwares/");
 
-        DeleteOperations deleteOperation=new DeleteOperations(remoteHost);
-        //deleteOperation.deleteAnalyzedFilesFromLocalMalwareDirectory("/home/cuckoo/Desktop/VirusShare_00322/","/home/cuckoo/.cuckoo/storage/analyses/");
-        //deleteOperation.deleteAnalyzedFiles(remoteHost.getMalwareFilesDirectory(),remoteHost.getReportsDirectory());
-
-         /* Move files */
-        //remoteOperationsUtil.moveFiles("/home/cuckoo/Desktop/MalwareReports","/media/cuckoo/VirusShare/Malware_JSON_Reports/malwares/");
-
-        /* SSH Operations*/
-        //SSHOperations sshOperations=new SSHOperations(remoteHost,"shell");
-        //sshOperations.executeCommand("ls");
-        //sshOperations.OpenShell();
+        //Start Delete Thread
+        DeleteThread deleteThread=new DeleteThread("192.168.1.126","192.168.1.126");
+        deleteThread.start();
     }
-
-
 }
