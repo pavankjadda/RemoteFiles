@@ -3,22 +3,26 @@ package com.networking.home;
 import com.networking.delete.DeleteThread;
 import com.networking.download.DownloadThread;
 import com.networking.util.LocalOperationsUtil;
+import com.networking.util.UtilityThread;
 
 public class GetRemoteFiles
 {
     public static void main(String[] args)
     {
+        String ipAddress="192.168.1.126";
+        String host="192.168.1.126";
+
         // Start Delete Thread
-        DownloadThread downloadThread=new DownloadThread("192.168.1.126","192.168.1.126");
+        DownloadThread downloadThread=new DownloadThread(host,ipAddress);
         downloadThread.start();
 
 
         // Start Delete Thread
-        DeleteThread deleteThread=new DeleteThread("192.168.1.126","192.168.1.126");
-        deleteThread.start();
+        DeleteThread deleteThread=new DeleteThread(host,ipAddress);
+        //deleteThread.start();
 
         // Move files
-        LocalOperationsUtil localOperationsUtil=new LocalOperationsUtil();
-        //localOperationsUtil.moveFiles("/home/cuckoo/Desktop/MalwareReports/","/media/cuckoo/VirusShare/Malware_JSON_Reports/malwares");
+        UtilityThread utilityThread=new UtilityThread("192.168.1.125");
+        utilityThread.start();
     }
 }

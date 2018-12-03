@@ -2,6 +2,7 @@ package com.networking.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.networking.config.RemoteHost;
 
 import java.io.File;
 import java.io.IOException;
@@ -9,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class LocalOperationsUtil
 {
@@ -93,6 +95,21 @@ public class LocalOperationsUtil
         {
             e.printStackTrace();
         }
+    }
+
+    public RemoteHost getRemoteHost(String ipAddress)
+    {
+        RemoteOperationsUtil remoteOperationsUtil=new RemoteOperationsUtil();
+        List<RemoteHost> remoteHosts=remoteOperationsUtil.getRemoteHostsDetails();
+        AtomicReference<RemoteHost> remoteHostAtomicReference=new AtomicReference<>();
+        for (RemoteHost remoteHostObject : remoteHosts)
+        {
+            if (remoteHostObject.getIpAddress().equals(ipAddress))
+            {
+                remoteHostAtomicReference.set(remoteHostObject);
+            }
+        }
+        return remoteHostAtomicReference.get();
     }
 }
 
