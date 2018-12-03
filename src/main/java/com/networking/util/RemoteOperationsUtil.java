@@ -3,6 +3,7 @@ package com.networking.util;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.SftpException;
 import com.networking.config.RemoteHost;
 import org.springframework.core.io.ClassPathResource;
 
@@ -99,4 +100,6 @@ public class RemoteOperationsUtil
         }
         return remoteHosts;
     }
+
+
 }

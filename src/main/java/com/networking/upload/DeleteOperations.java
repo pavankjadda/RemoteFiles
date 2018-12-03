@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jcraft.jsch.*;
 import com.networking.config.RemoteHost;
+import com.networking.util.LocalOperationsUtil;
 import com.networking.util.RemoteOperationsUtil;
 
 import java.io.File;
@@ -20,6 +21,7 @@ public class DeleteOperations
     private ChannelSftp channelSftp = null;
     private RemoteOperationsUtil remoteOperationsUtil = null;
     private RemoteHost remoteHost=null;
+    private LocalOperationsUtil localOperationsUtil=null;
 
     public DeleteOperations(RemoteHost remoteHost)
     {
@@ -35,6 +37,7 @@ public class DeleteOperations
             channelSftp.connect();
             this.remoteOperationsUtil=new RemoteOperationsUtil();
             this.remoteHost=remoteHost;
+            this.localOperationsUtil=new LocalOperationsUtil();
         }
 
         catch (JSchException e)
@@ -51,7 +54,7 @@ public class DeleteOperations
         List<String> malwareFileNamesFromMalwareDirectory = new ArrayList<>();
 
         /*  Get Malware File names from Malwares folder and store in List */
-        getMalwareFileNamesFromMalwareDirectory(remoteMalwaresDirectory, malwareFileNamesFromMalwareDirectory);
+        getMalwareFileNamesFromRemoteMalwareDirectory(remoteMalwaresDirectory, malwareFileNamesFromMalwareDirectory);
         try
         {
             directories = channelSftp.ls(remoteReportsDirectory);
@@ -87,7 +90,8 @@ public class DeleteOperations
         return malwareFileNamesFromMalwareDirectory.contains(malwareFileName);
     }
 
-    private void getMalwareFileNamesFromMalwareDirectory(String remoteMalwaresDirectory, List<String> malwareFileNamesFromMalwareDirectory)
+
+    private void getMalwareFileNamesFromRemoteMalwareDirectory(String remoteMalwaresDirectory, List<String> malwareFileNamesFromMalwareDirectory)
     {
         Vector files;
         try
@@ -107,23 +111,6 @@ public class DeleteOperations
     }
 
 
-    private String getMalwareFileNameFromReport(String remoteFilePath) throws IOException
-    {
-        try
-        {
-            String localFilePath = remoteHost.getLocalTempFilePath();
-            channelSftp.get(remoteFilePath, localFilePath);
-
-            byte[] fileByteData = Files.readAllBytes(Paths.get(localFilePath));
-            ObjectMapper objectMapper = new ObjectMapper();
-            JsonNode rootNode = objectMapper.readTree(fileByteData);
-            return rootNode.path("target").path("file").path("name").textValue();
-        } catch (SftpException e)
-        {
-            e.printStackTrace();
-        }
-        return null;
-    }
 
     private String getFileNameFromTaskJsonFile(String remoteFilePath) throws IOException
     {
@@ -147,68 +134,35 @@ public class DeleteOperations
 
 
 
-
-    public void deleteAnalyzedFilesFromLocalCustomDirectory(String localMalwaresDirectory, String localReportsDirectory)
+    /* Delete Malware files from Local Malware Directory*/
+    public void deleteAnalyzedFilesFromLocalMalwareDirectory(String localMalwaresDirectory, String localCuckooDirectory)
     {
-        List<String> malwareFileNamesFromMalwareDirectory = new ArrayList<>();
-        getMalwareFileNamesFromLocalDirectory(localMalwaresDirectory, malwareFileNamesFromMalwareDirectory);
+
+        List<Integer> reportsDirectoryNumbers=new ArrayList<>();
         try
         {
-            File file = new File(localReportsDirectory);
-            File[] fileList = file.listFiles();
-            assert fileList != null;
-            int i = 0;
-            for (File fileEntry : fileList)
+            localOperationsUtil.getLocalCuckooDirectoryNumbers(localCuckooDirectory,reportsDirectoryNumbers);
+            int i=1;
+            for(Integer directoryNumber:reportsDirectoryNumbers)
             {
-                if (!fileEntry.isDirectory())
-                {
-                    String malwareFileNameFromReport = getMalwareNameFromLocalReport(fileEntry.getAbsolutePath());
-                    if (isFileExistsInAnalyzedFiles(malwareFileNameFromReport, malwareFileNamesFromMalwareDirectory))
-                    {
-                        //System.out.println((i++)+" :File "+malwareFileNameFromReport +" present in "+localMalwaresDirectory+" directory, so deleting file");
-                        deleteFile(localMalwaresDirectory, malwareFileNameFromReport);
-                    }
-                    else
-                        System.out.println("Index :" + (i++));
-                }
+                String localTaskJsonFilePath=localCuckooDirectory+directoryNumber+"/task.json";
+                String malwareFileNameFromReport=getMalwareNameFromLocalTaskJsonReport(localTaskJsonFilePath);
+                localOperationsUtil.deleteLocalFile(localMalwaresDirectory,malwareFileNameFromReport);
             }
         }
         catch (Exception e)
         {
             e.printStackTrace();
         }
+        System.out.println("Files Transfer Success");
         System.out.println("End of Local deleteAnalyzedFiles() method");
     }
 
-    private void deleteFile(String localMalwaresDirectory, String malwareFileNameFromReport)
-    {
-        File file = new File(localMalwaresDirectory);
-        for (File fileEntry : Objects.requireNonNull(file.listFiles()))
-        {
-            if (!fileEntry.isDirectory() && fileEntry.getName().equals(malwareFileNameFromReport))
-            {
-                fileEntry.delete();
-                System.out.println("File deleted: " + malwareFileNameFromReport);
 
-            }
-        }
-    }
 
-    private void getMalwareFileNamesFromLocalDirectory(String localMalwaresDirectory, List<String> malwareFileNamesFromMalwareDirectory)
-    {
-        File file = new File(localMalwaresDirectory);
-        File[] fileList = file.listFiles();
-        assert fileList != null;
-        for (File fileEntry : fileList)
-        {
-            if (!fileEntry.isDirectory())
-            {
-                malwareFileNamesFromMalwareDirectory.add(fileEntry.getName());
-            }
-        }
-    }
 
-    private String getMalwareNameFromLocalReport(String fileAbsolutePath)
+
+    private String getMalwareNameFromLocalTaskJsonReport(String fileAbsolutePath)
     {
         String malwareFileNameFromReport = null;
         try

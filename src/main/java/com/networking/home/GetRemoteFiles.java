@@ -27,17 +27,18 @@ public class GetRemoteFiles
 
         DownloadOperations downloadOperations= new DownloadOperations(remoteHost);
         //downloadOperations.copyReportsFromRemoteToLocalDirectory(remoteHost.getReportsDirectory(),"/home/cuckoo/Desktop/MalwareReports/");
+        downloadOperations.copyReportsFromLocalCuckooToLocalDirectory("/home/cuckoo/.cuckoo/storage/analyses/","/media/cuckoo/VirusShare/Malware_JSON_Reports/malwares/");
 
-        DeleteOperations deleteOperation=new DeleteOperations(remoteHost);
+        //DeleteOperations deleteOperation=new DeleteOperations(remoteHost);
         //deleteOperation.deleteAnalyzedFiles(remoteHost.getMalwareFilesDirectory(),remoteHost.getReportsDirectory());
 
          /* Move files */
         //remoteOperationsUtil.moveFiles("/home/cuckoo/Desktop/MalwareReports","/media/cuckoo/VirusShare/Malware_JSON_Reports/malwares/");
 
         /* SSH Operations*/
-        SSHOperations sshOperations=new SSHOperations(remoteHost,"shell");
+        //SSHOperations sshOperations=new SSHOperations(remoteHost,"shell");
         //sshOperations.executeCommand("ls");
-        sshOperations.OpenShell();
+        //sshOperations.OpenShell();
     }
 
 

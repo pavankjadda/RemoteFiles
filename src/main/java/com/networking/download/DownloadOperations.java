@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jcraft.jsch.*;
 import com.networking.config.RemoteHost;
+import com.networking.util.LocalOperationsUtil;
 import com.networking.util.RemoteOperationsUtil;
 
 import java.io.File;
@@ -21,6 +22,7 @@ public class DownloadOperations
     private ChannelSftp channelSftp=null;
     private RemoteOperationsUtil remoteOperationsUtil=null;
     private RemoteHost remoteHost = null;
+    private LocalOperationsUtil localOperationsUtil=null;
 
     public DownloadOperations(RemoteHost remoteHost)
     {
@@ -36,6 +38,7 @@ public class DownloadOperations
             channelSftp.connect();
             this.remoteOperationsUtil=new RemoteOperationsUtil();
             this.remoteHost=remoteHost;
+            this.localOperationsUtil=new LocalOperationsUtil();
         }
 
         catch (JSchException e)
@@ -65,7 +68,7 @@ public class DownloadOperations
                 InputStream in=channelSftp.get(remoteFilePath);
                 Files.copy(in, localFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
                 System.out.println(remoteFilePath+" File Copied to Location -> "+localFilePath);
-                getTargetDataFromJsonFileAndRenameIt(localFile,localDirectory);
+                localOperationsUtil.getTargetDataFromJsonFileAndRenameIt(localFile,localDirectory);
             }
         }
 
@@ -82,14 +85,23 @@ public class DownloadOperations
         List<Integer> reportsDirectoryNumbers=new ArrayList<>();
         try
         {
-            getLocalCuckooDirectoryNumbers(localCuckooDirectory,reportsDirectoryNumbers);
+            localOperationsUtil.getLocalCuckooDirectoryNumbers(localCuckooDirectory,reportsDirectoryNumbers);
+            int i=1;
             for(Integer directoryNumber:reportsDirectoryNumbers)
             {
                 String localCuckooFilePath=localCuckooDirectory+directoryNumber+"/reports/report.json";
                 String localFilePath=localDirectory+"report.json";
-                Files.copy(Paths.get(localCuckooFilePath),Paths.get(localDirectory));
+                try
+                {
+                    Files.copy(Paths.get(localCuckooFilePath),Paths.get(localFilePath),StandardCopyOption.REPLACE_EXISTING);
+                    localOperationsUtil.getTargetDataFromJsonFileAndRenameIt(new File(localFilePath),localDirectory);
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
 
-                getTargetDataFromJsonFileAndRenameIt(new File(localFilePath),localDirectory);
+                System.out.println((i++)+" Reports transferred");
             }
         }
         catch (Exception e)
@@ -99,48 +111,6 @@ public class DownloadOperations
         System.out.println("Files Transfer Success");
     }
 
-    private void getLocalCuckooDirectoryNumbers(String localCuckooDirectory, List<Integer> reportsDirectoryNumbers)
-    {
-        File[] listFiles=new File(localCuckooDirectory).listFiles();
-        assert listFiles != null;
-        for(File file:listFiles)
-        {
-            if(!file.isDirectory())
-                reportsDirectoryNumbers.add(Integer.valueOf(file.getName()));
-        }
-    }
 
-    private void getTargetDataFromJsonFileAndRenameIt(File localFile,String localDirectory) throws IOException
-    {
-        byte[] mapByteData = Files.readAllBytes(Paths.get(localFile.getAbsolutePath()));
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        JsonNode rootNode =objectMapper.readTree(mapByteData);
-        String sha256=rootNode.path("target").path("file").path("sha256").textValue();
-        int threatScore=Math.round(rootNode.path("info").path("score").floatValue());
-        String newFileName=localDirectory+"/"+sha256+"-"+threatScore+".json";
-        localFile.renameTo(new File(newFileName));
-
-        System.out.println("sha256 "+sha256);
-    }
-
-    public void listFilesInRemoteDirectory(String directoryName)
-    {
-
-        Vector files;
-        try
-        {
-            files = channelSftp.ls(directoryName);
-            for (Object file : files)
-            {
-                ChannelSftp.LsEntry lsEntry = (ChannelSftp.LsEntry) file;
-                System.out.println(lsEntry.getFilename() + " is directory? " + lsEntry.getAttrs().isDir());
-            }
-        }
-
-        catch (SftpException e)
-        {
-            e.printStackTrace();
-        }
-    }
 }
