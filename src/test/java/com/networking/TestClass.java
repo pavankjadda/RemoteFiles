@@ -1,5 +1,7 @@
 package com.networking;
 
+import org.springframework.security.crypto.bcrypt.BCrypt;
+
 import javax.net.ssl.SSLSocketFactory;
 import java.io.File;
 import java.io.IOException;
@@ -9,6 +11,7 @@ import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -16,6 +19,24 @@ public class TestClass
 {
     public static void main(String[] args) throws IOException
     {
+        System.out.println("Enter actual Password");
+        Scanner scanner=new Scanner(System.in);
+        String plain_password=scanner.nextLine();
+
+        String stronger_salt = BCrypt.gensalt(12);
+        String pw_hash = BCrypt.hashpw(plain_password, stronger_salt);
+        System.out.println("pw_hash: "+pw_hash);
+
+        System.out.println("Enter matching Password");
+
+        String candidate_password=scanner.nextLine();
+
+        if (BCrypt.checkpw(candidate_password, pw_hash))
+            System.out.println("It matches");
+        else
+            System.out.println("It does not match");
+
+        /*
         File[] listFiles=new File("/media/cuckoo/VirusShare/Malware_JSON_Reports/").listFiles();
         assert listFiles != null;
         for(File fileEntry:listFiles)
@@ -28,7 +49,7 @@ public class TestClass
                 Files.move(Paths.get(fileEntry.getAbsolutePath()), Paths.get("/media/cuckoo/VirusShare/Malware_JSON_Reports/malwares/"+newFileName),
                         StandardCopyOption.REPLACE_EXISTING);
             }
-        }
+        } */
 
         //RemoteOperationsUtil remoteOperationsUtil=new RemoteOperationsUtil();
         //remoteOperationsUtil.moveFiles("/home/cuckoo/Desktop/MalwareReports","/media/cuckoo/VirusShare/Malware_JSON_Reports/malwares/");

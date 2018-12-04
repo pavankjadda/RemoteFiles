@@ -14,7 +14,7 @@ public class GetRemoteFiles
 
         // Start Delete Thread
         DownloadThread downloadThread=new DownloadThread(host,ipAddress);
-        downloadThread.start();
+        //downloadThread.start();
 
 
         // Start Delete Thread
@@ -23,6 +23,6 @@ public class GetRemoteFiles
 
         // Move files
         UtilityThread utilityThread=new UtilityThread("192.168.1.125");
-        utilityThread.start();
+        //utilityThread.start();
     }
 }
