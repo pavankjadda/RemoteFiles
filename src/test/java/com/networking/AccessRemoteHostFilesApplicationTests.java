@@ -15,4 +15,10 @@ public class AccessRemoteHostFilesApplicationTests
     {
     }
 
+    @Test
+    public void bcryptExample()
+    {
+
+    }
+
 }

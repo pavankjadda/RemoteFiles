@@ -1,82 +1,95 @@
 package com.networking;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 
+import javax.net.ssl.SSLSocketFactory;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class TestClass
 {
-    public static void main(String[] args)
+    public static void main(String[] args) throws IOException
     {
-        try
+        System.out.println("Enter actual Password");
+        Scanner scanner=new Scanner(System.in);
+        String plain_password=scanner.nextLine();
+
+        String stronger_salt = BCrypt.gensalt(12);
+        String pw_hash = BCrypt.hashpw(plain_password, stronger_salt);
+        System.out.println("pw_hash: "+pw_hash);
+
+        System.out.println("Enter matching Password");
+
+        String candidate_password=scanner.nextLine();
+
+        if (BCrypt.checkpw(candidate_password, pw_hash))
+            System.out.println("It matches");
+        else
+            System.out.println("It does not match");
+
+        /*
+        File[] listFiles=new File("/media/cuckoo/VirusShare/Malware_JSON_Reports/").listFiles();
+        assert listFiles != null;
+        for(File fileEntry:listFiles)
         {
-            File file = new File("/home/cuckoo/Desktop/MalwareReports");
-            String destinationDirectory = "/media/cuckoo/VirusShare/Malware_JSON_Reports/malwares/";
-            File[] fileList = file.listFiles();
-            assert fileList != null;
-            for (File fileEntry : fileList)
+            if (!fileEntry.isDirectory() && !fileEntry.getName().equals("malwares_json_reports_1.tar.xz"))
             {
-                if (!fileEntry.isDirectory())
-                {
-                    Files.move(Paths.get(fileEntry.getAbsolutePath()), Paths.get(destinationDirectory + fileEntry.getName()));
-                    System.out.println("File " + fileEntry.getAbsolutePath() + " moved to " + (destinationDirectory + fileEntry.getName()));
-                }
+                String fileName=fileEntry.getName();
+                String newFileName=changeName(fileName);
+
+                Files.move(Paths.get(fileEntry.getAbsolutePath()), Paths.get("/media/cuckoo/VirusShare/Malware_JSON_Reports/malwares/"+newFileName),
+                        StandardCopyOption.REPLACE_EXISTING);
             }
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
+        } */
+
+        //RemoteOperationsUtil remoteOperationsUtil=new RemoteOperationsUtil();
+        //remoteOperationsUtil.moveFiles("/home/cuckoo/Desktop/MalwareReports","/media/cuckoo/VirusShare/Malware_JSON_Reports/malwares/");
     }
 
-
-
-    private static String getNewFileName(File fileEntry, String localDirectory) throws IOException
+    private static String changeName(String fileName)
     {
-        byte[] mapByteData = Files.readAllBytes(Paths.get(fileEntry.getAbsolutePath()));
-        ObjectMapper objectMapper = new ObjectMapper();
-        JsonNode rootNode = objectMapper.readTree(mapByteData);
-        String sha256 = rootNode.path("target").path("file").path("sha256").textValue();
-        int threatScore = Math.round(rootNode.path("info").path("score").floatValue());
-        return localDirectory+ sha256 + "-" + threatScore + ".json";
-    }
+        String pattern = "(?<=malwares)[0-9a-zA-Z-]+.json";
+        // Create a Pattern object
+        Pattern r = Pattern.compile(pattern);
 
-    private static boolean threadScoreExistsInFileName(String fileName)
-    {
-        final String regex = "[a-zA-Z0-9]+[-][0-9]+.json";
-        final Pattern pattern = Pattern.compile(regex, Pattern.MULTILINE);
-        final Matcher matcher = pattern.matcher(fileName);
-        //System.out.println("Full match: " + matcher.group(0));
-        return matcher.find();
-    }
-
-    private static void renameFilesWithThreatScore()
-    {
-        try
+        // Now create matcher object.
+        Matcher m = r.matcher(fileName);
+        if (m.find())
         {
-            String localDirectory = "/media/cuckoo/VirusShare/Malware_JSON_Reports/malwares/";
-            File file = new File(localDirectory);
-            File[] fileList = file.listFiles();
-            assert fileList != null;
-            for (File fileEntry : fileList)
-            {
-                if (!fileEntry.isDirectory() && (!threadScoreExistsInFileName(fileEntry.getName())))
-                {
-                    String newFileName=getNewFileName(fileEntry,localDirectory);
-                    System.out.println("Old File Name "+fileEntry.getName()+"  and new File Name: " + newFileName);
-                    fileEntry.renameTo(new File(newFileName));
-                }
-            }
-        } catch (Exception e)
-        {
-            e.printStackTrace();
+            System.out.println("Found value: " + m.group(0));
         }
+        else
+        {
+            System.out.println("NO MATCH");
+        }
+        return m.group(0);
+    }
+
+
+    static void test() throws IOException
+    {
+        Socket socket = new Socket("192.168.1.120", 22);
+        InputStream in = socket.getInputStream();
+        OutputStream outputStream = socket.getOutputStream();
+
+        SSLSocketFactory sslSocketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+        socket = sslSocketFactory.createSocket(socket, socket.getLocalSocketAddress().toString(), socket.getPort(), true);
+
+        outputStream = socket.getOutputStream();
+
+
+        System.out.println(socket.isConnected());
+        outputStream.write(10);
 
     }
+
 }
