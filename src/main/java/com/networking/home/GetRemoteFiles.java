@@ -10,19 +10,19 @@ public class GetRemoteFiles
     public static void main(String[] args)
     {
         String ipAddress="192.168.1.126";
-        String host="192.168.1.126";
+        String threadName="192.168.1.126";
 
         // Start Delete Thread
-        DownloadThread downloadThread=new DownloadThread(host,ipAddress);
+        DownloadThread downloadThread=new DownloadThread(threadName,ipAddress);
         //downloadThread.start();
 
 
         // Start Delete Thread
-        DeleteThread deleteThread=new DeleteThread(host,ipAddress);
-        //deleteThread.start();
+        DeleteThread deleteThread=new DeleteThread(threadName,ipAddress);
+        deleteThread.start();
 
         // Move files
-        UtilityThread utilityThread=new UtilityThread("192.168.1.125");
+        UtilityThread utilityThread=new UtilityThread(threadName);
         //utilityThread.start();
     }
 }
