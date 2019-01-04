@@ -9,8 +9,8 @@ public class GetRemoteFiles
 {
     public static void main(String[] args)
     {
-        String ipAddress="192.168.1.126";
-        String threadName="192.168.1.126";
+        String ipAddress="192.168.1.125";
+        String threadName="192.168.1.125";
 
         // Start Delete Thread
         DownloadThread downloadThread=new DownloadThread(threadName,ipAddress);
@@ -19,9 +19,10 @@ public class GetRemoteFiles
 
         // Start Delete Thread
         DeleteThread deleteThread=new DeleteThread(threadName,ipAddress);
-        deleteThread.start();
+        //deleteThread.start();
 
         // Move files
+
         UtilityThread utilityThread=new UtilityThread(threadName);
         //utilityThread.start();
     }

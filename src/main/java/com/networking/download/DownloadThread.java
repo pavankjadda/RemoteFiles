@@ -31,7 +31,7 @@ public class DownloadThread implements Runnable
             DownloadOperations downloadOperations= new DownloadOperations(remoteHost);
             System.out.println("Executing Thread: "+threadName + " inside DownloadThread");
 
-            downloadOperations.copyReportsFromRemoteToLocalDirectory(remoteHost.getReportsDirectory(),"/home/cuckoo/Desktop/MalwareReports2/");
+            downloadOperations.copyReportsFromRemoteToLocalDirectory(remoteHost.getReportsDirectory(),"/home/cuckoo/Desktop/MalwareReports/");
             //downloadOperations.copyReportsFromLocalCuckooToLocalDirectory("/home/cuckoo/.cuckoo/storage/analyses/","/media/cuckoo/VirusShare/Malware_JSON_Reports/malwares/");
         }
         catch (Exception e)
