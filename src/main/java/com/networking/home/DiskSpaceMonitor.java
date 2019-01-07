@@ -220,7 +220,7 @@ public class DiskSpaceMonitor
         {
             session.connect();
             channelExec = (ChannelExec) session.openChannel("exec");
-            channelExec.setCommand("df / | awk '{print $5}' | tr -dc '0-9'");
+            channelExec.setCommand(CuckooConstants.diskUsageCommand);
             channelExec.setInputStream(System.in);
             channelExec.setOutputStream(System.out);
             channelExec.connect();
