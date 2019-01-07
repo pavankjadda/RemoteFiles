@@ -1,14 +1,17 @@
 package com.networking.home;
 
-import com.jcraft.jsch.*;
+import com.jcraft.jsch.ChannelExec;
+import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.Session;
 import com.networking.config.RemoteHost;
-import com.networking.util.LocalOperationsUtil;
 import com.networking.util.RemoteOperationsUtil;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Objects;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class DiskSpaceMonitor
 {
@@ -38,17 +41,18 @@ public class DiskSpaceMonitor
     private static void startCuckooOnRemoteMachine(Session session, RemoteHost remoteHost)
     {
         ChannelExec channelExec=null;
-        String stopCuckooCommand="kill -9 $(ps -ef | grep /bin/cuckoo | head -n 1 |awk '{print $2}')";
+        String stopCuckooCommand="kill -9 $(ps -ef | grep '[a-zA-Z/]/bin/cuckoo' | head -n 1 |awk '{print $2}')";
         String startCuckooCommand="source venv/bin/activate && cuckoo &";
         try
         {
             executeCommandOnRemoteMachine(session,stopCuckooCommand);
             System.out.println("Stopped Cuckoo on "+session.getHost());
+            session.disconnect();
 
-
+            Thread.sleep(3000);
             session=getSession(remoteHost);
             executeCommandOnRemoteMachine(session,startCuckooCommand);
-            System.out.println("Started Cuckoo on "+session.getHost());
+            //System.out.println("Started Cuckoo on "+session.getHost());
 
         }
         catch (Exception e)
@@ -92,8 +96,20 @@ public class DiskSpaceMonitor
             channelExec.setCommand(command);
             channelExec.setInputStream(System.in);
             channelExec.setOutputStream(System.out);
+            InputStream in = channelExec.getInputStream();
             channelExec.connect();
-            readCommandOutput(channelExec);
+            readCommandOutput(channelExec,in);
+            Thread.sleep(5000);
+
+            /* ChannelExec finalChannelExec = channelExec;
+           TimerTask task = new TimerTask()
+            {
+                public void run()
+                {
+                    readCommandOutput(finalChannelExec,in);
+                }
+            };*/
+
         }
         catch (Exception e)
         {
@@ -108,12 +124,10 @@ public class DiskSpaceMonitor
     }
 
 
-    private static void readCommandOutput(ChannelExec channelExec)
+    private static void readCommandOutput(ChannelExec channelExec, InputStream in)
     {
-        InputStream in = null;
         try
         {
-            in = channelExec.getInputStream();
             byte[] tmp = new byte[1024];
             while (true)
             {
@@ -123,6 +137,7 @@ public class DiskSpaceMonitor
                     if (i < 0)
                         break;
                     String outputStr=new String(tmp, 0, i).trim();
+                    System.out.println("outputStr => "+outputStr);
                 }
                 if(channelExec.isClosed())
                 {
@@ -149,6 +164,7 @@ public class DiskSpaceMonitor
         {
             e.printStackTrace();
         }
+
     }
 
 
