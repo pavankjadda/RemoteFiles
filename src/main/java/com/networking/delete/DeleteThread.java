@@ -32,18 +32,6 @@ public class DeleteThread implements Runnable
     @Override
     public void run()
     {
-        DeleteOperations deleteOperation=new DeleteOperations(remoteHost);
-        System.out.println("Executing Thread: "+threadName + " inside DeleteThread");
-        if(remoteHost.getIpAddress().equals("192.168.1.121"))
-        {
-            logger.info("TimeStamp: {} => Deleting Analyzed files from {} Malwares directory {} ", LocalDateTime.now(),threadName,remoteHost.getMalwareFilesDirectory());
-            deleteOperation.deleteAnalyzedFilesFromLocalMalwareDirectory(remoteHost.getMalwareFilesDirectory(), CuckooConstants.localCuckooDirectory);
-        }
-        else
-        {
-            logger.info("TimeStamp: {} => Deleting Analyzed files from {} Malwares directory {} ", LocalDateTime.now(),threadName,remoteHost.getMalwareFilesDirectory());
-            deleteOperation.deleteAnalyzedFiles(remoteHost.getMalwareFilesDirectory(),remoteHost.getReportsDirectory());
-        }
 
     }
 

@@ -4,6 +4,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.networking.config.RemoteHost;
 import com.networking.constants.CuckooConstants;
+import com.networking.home.DiskSpaceMonitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -19,6 +22,8 @@ import java.util.regex.Pattern;
 
 public class LocalOperationsUtil
 {
+    private Logger logger= LoggerFactory.getLogger(LocalOperationsUtil.class);
+
     public LocalOperationsUtil()
     {
 
@@ -127,14 +132,11 @@ public class LocalOperationsUtil
         {
             try
             {
-                if(file.isDirectory() && file.getName().equals("malwares"))
+                if(file.isDirectory() && file.getName().equals("malwares") && hasFiles(file))
                 {
                     int archiveSequence=getArchiveSequence(listFiles)+1;
                     compressDirectoryToTarFormat(file,CuckooConstants.externalMediaJsonReportsDirectory,archiveSequence);
-                    if (file.delete())
-                    {
-                        file.mkdir();
-                    }
+                    deleteAndCreateDirectory(file);
                 }
             }
             catch (Exception e)
@@ -142,6 +144,39 @@ public class LocalOperationsUtil
                 e.printStackTrace();
             }
         }
+    }
+
+    private void deleteAndCreateDirectory(File file)
+    {
+        ProcessBuilder processBuilder = new ProcessBuilder();
+        // Run a shell command
+        processBuilder.directory(file.getParentFile());
+        processBuilder.command("bash", "-c", "rm -rf "+file.getAbsolutePath()+" && mkdir "+file.getAbsolutePath());
+        try
+        {
+            Process process = processBuilder.start();
+            int exitVal = process.waitFor();
+            if (exitVal == 0)
+            {
+                logger.info(" Successfully deleted direcory {}",file.getAbsolutePath());
+            }
+            else
+            {
+                logger.info("Failed to delete direcory {}",file.getAbsolutePath());
+            }
+
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    private boolean hasFiles(File file)
+    {
+        File[] listFiles=file.listFiles();
+        assert listFiles != null;
+        return listFiles.length > 0;
     }
 
     private void compressDirectoryToTarFormat(File file, String externalMediaJsonReportsDirectory, int archiveSequence)
@@ -183,7 +218,6 @@ public class LocalOperationsUtil
 
                 if (matcher.find())
                 {
-                    System.out.println("Full match: " + matcher.group(0));
                     if(Integer.parseInt(matcher.group(0)) > achieveSequence)
                         achieveSequence=Integer.parseInt(matcher.group(0));
                 }

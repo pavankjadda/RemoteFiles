@@ -32,18 +32,6 @@ public class DownloadThread implements Runnable
     {
         try
         {
-            DownloadOperations downloadOperations= new DownloadOperations(remoteHost);
-            System.out.println("Executing Thread: "+threadName + " inside DownloadThread");
-            if(remoteHost.getIpAddress().equals("192.168.1.121"))
-            {
-                logger.info("TimeStamp: {} => Copying {} reports from Local Cuckoo Directory {} to external disk: {} ", LocalDateTime.now(),threadName,CuckooConstants.localCuckooDirectory,CuckooConstants.externalMediaDirectory);
-                downloadOperations.copyReportsFromLocalCuckooToLocalDirectory(CuckooConstants.localCuckooDirectory, CuckooConstants.externalMediaDirectory);
-            }
-            else
-            {
-                logger.info("TimeStamp: {} => Copying {} reports from Remote Reports Directory {} to Local malware reports directory: {} ", LocalDateTime.now(),threadName,remoteHost.getReportsDirectory(),CuckooConstants.localMalwareReportsDirectory);
-                downloadOperations.copyReportsFromRemoteToLocalDirectory(remoteHost.getReportsDirectory(),CuckooConstants.localMalwareReportsDirectory);
-            }
 
         }
         catch (Exception e)
@@ -61,4 +49,5 @@ public class DownloadThread implements Runnable
             t.start();
         }
     }
+
 }

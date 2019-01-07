@@ -32,6 +32,6 @@ public class GetRemoteFiles
         //utilityThread.start();
 
         LocalOperationsUtil localOperationsUtil=new LocalOperationsUtil();
-        localOperationsUtil.archiveExternalMalwaresFolder();
+        //localOperationsUtil.archiveExternalMalwaresFolder();
     }
 }

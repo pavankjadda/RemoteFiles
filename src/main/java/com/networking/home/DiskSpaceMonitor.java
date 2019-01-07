@@ -6,7 +6,9 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
 import com.networking.config.RemoteHost;
 import com.networking.constants.CuckooConstants;
+import com.networking.delete.DeleteOperations;
 import com.networking.delete.DeleteThread;
+import com.networking.download.DownloadOperations;
 import com.networking.download.DownloadThread;
 import com.networking.util.LocalOperationsUtil;
 import com.networking.util.RemoteOperationsUtil;
@@ -48,18 +50,38 @@ public class DiskSpaceMonitor
                     session = getSession(remoteHost);
                     stopCuckooOnRemoteMachine(session);
 
-                    // Start Download Thread and copy files to local machine
-                    DownloadThread downloadThread = new DownloadThread(threadName, ipAddress);
-                    downloadThread.start();
+                    // Start Download Operation and copy files to local machine
+                    DownloadOperations downloadOperations= new DownloadOperations(remoteHost);
+                    if(remoteHost.getIpAddress().equals("192.168.1.121"))
+                    {
+                        logger.info("TimeStamp: {} => Copying {} reports from Local Cuckoo Directory {} to external disk: {} ", LocalDateTime.now(),threadName,CuckooConstants.localCuckooDirectory,CuckooConstants.externalMediaDirectory);
+                        downloadOperations.copyReportsFromLocalCuckooToLocalDirectory(CuckooConstants.localCuckooDirectory, CuckooConstants.externalMediaDirectory);
+                    }
+                    else
+                    {
+                        logger.info("TimeStamp: {} => Copying {} reports from Remote Reports Directory {} to Local malware reports directory: {} ", LocalDateTime.now(),threadName,remoteHost.getReportsDirectory(),CuckooConstants.localMalwareReportsDirectory);
+                        downloadOperations.copyReportsFromRemoteToLocalDirectory(remoteHost.getReportsDirectory(),CuckooConstants.localMalwareReportsDirectory);
+                    }
 
-                    // Start Delete Thread and delete analyzed files from Malware Folder
-                    DeleteThread deleteThread = new DeleteThread(threadName, ipAddress);
-                    deleteThread.start();
+
+                    // Start Delete Operation and delete analyzed files from Malware Folder
+                    DeleteOperations deleteOperation=new DeleteOperations(remoteHost);
+                    if(remoteHost.getIpAddress().equals("192.168.1.121"))
+                    {
+                        logger.info("TimeStamp: {} => Deleting Analyzed files from {} Malwares directory {} ", LocalDateTime.now(),threadName,remoteHost.getMalwareFilesDirectory());
+                        deleteOperation.deleteAnalyzedFilesFromLocalMalwareDirectory(remoteHost.getMalwareFilesDirectory(), CuckooConstants.localCuckooDirectory);
+                    }
+                    else
+                    {
+                        logger.info("TimeStamp: {} => Deleting Analyzed files from {} Malwares directory {} ", LocalDateTime.now(),threadName,remoteHost.getMalwareFilesDirectory());
+                        deleteOperation.deleteAnalyzedFiles(remoteHost.getMalwareFilesDirectory(),remoteHost.getReportsDirectory());
+                    }
 
                     // Move malware reports from local machine to External Directory
-                    UtilityThread utilityThread = new UtilityThread(threadName);
-                    utilityThread.start();
+                    logger.info("Moving {} reports from {} to external disk: {} ",threadName,CuckooConstants.localMalwareReportsDirectory,CuckooConstants.externalMediaDirectory);
+                    localOperationsUtil.moveFiles(CuckooConstants.localMalwareReportsDirectory,CuckooConstants.externalMediaDirectory);;
 
+                    logger.info(" Achieving malwares directory on ExternalDrive ");
                     localOperationsUtil.archiveExternalMalwaresFolder();
 
                     //Start Cuckoo again once everything is done
