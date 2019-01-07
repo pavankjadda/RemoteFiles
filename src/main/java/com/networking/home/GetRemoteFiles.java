@@ -30,5 +30,8 @@ public class GetRemoteFiles
 
         UtilityThread utilityThread=new UtilityThread(threadName);
         //utilityThread.start();
+
+        LocalOperationsUtil localOperationsUtil=new LocalOperationsUtil();
+        localOperationsUtil.archiveExternalMalwaresFolder();
     }
 }

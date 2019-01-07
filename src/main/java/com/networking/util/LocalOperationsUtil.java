@@ -3,14 +3,19 @@ package com.networking.util;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.networking.config.RemoteHost;
+import com.networking.constants.CuckooConstants;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class LocalOperationsUtil
 {
@@ -110,6 +115,85 @@ public class LocalOperationsUtil
             }
         }
         return remoteHostAtomicReference.get();
+    }
+
+    public void archiveExternalMalwaresFolder()
+    {
+        String externalMediaJsonReportsDirectory= CuckooConstants.externalMediaJsonReportsDirectory;
+
+        File[] listFiles=new File(externalMediaJsonReportsDirectory).listFiles();
+        assert listFiles != null;
+        for(File file:listFiles)
+        {
+            try
+            {
+                if(file.isDirectory() && file.getName().equals("malwares"))
+                {
+                    int archiveSequence=getArchiveSequence(listFiles)+1;
+                    compressDirectoryToTarFormat(file,CuckooConstants.externalMediaJsonReportsDirectory,archiveSequence);
+                    if (file.delete())
+                    {
+                        file.mkdir();
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void compressDirectoryToTarFormat(File file, String externalMediaJsonReportsDirectory, int archiveSequence)
+    {
+        ProcessBuilder processBuilder = new ProcessBuilder();
+        // Run a shell command
+        processBuilder.directory(new File(externalMediaJsonReportsDirectory));
+        processBuilder.command("bash", "-c", "tar -czvf malwares_json_reports_"+archiveSequence+".tar.xz malwares");
+
+        try
+        {
+            Process process = processBuilder.start();
+
+            StringBuilder output = new StringBuilder();
+            int exitVal = process.waitFor();
+            if (exitVal == 0)
+            {
+                System.out.println("Success!");
+            }
+
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+    }
+
+    private int getArchiveSequence(File[] listFiles)
+    {
+        int achieveSequence=0;
+        for(File file:listFiles)
+        {
+            try
+            {
+                final String regex = "[\\d]";
+                final Pattern pattern = Pattern.compile(regex, Pattern.MULTILINE);
+                final Matcher matcher = pattern.matcher(file.getName());
+
+                if (matcher.find())
+                {
+                    System.out.println("Full match: " + matcher.group(0));
+                    if(Integer.parseInt(matcher.group(0)) > achieveSequence)
+                        achieveSequence=Integer.parseInt(matcher.group(0));
+                }
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+        }
+        return achieveSequence;
     }
 }
 

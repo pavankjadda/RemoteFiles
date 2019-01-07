@@ -58,6 +58,7 @@ public class DiskSpaceMonitor
                     UtilityThread utilityThread = new UtilityThread(threadName);
                     utilityThread.start();
 
+
                     //Start Cuckoo again once everything is done
                     session = getSession(remoteHost);
                     startCuckooOnRemoteMachine(session, remoteHost);
