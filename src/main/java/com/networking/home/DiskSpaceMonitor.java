@@ -41,7 +41,7 @@ public class DiskSpaceMonitor
                 int diskUsagePercentage = getDiskUsage(session);
                 logger.info("TimeStamp: " + LocalDateTime.now() + "  " + remoteHost.getIpAddress() + " Disk Usage: " + diskUsagePercentage);
 
-                if (diskUsagePercentage > 60)
+                if (diskUsagePercentage > 90)
                 {
                     logger.info(remoteHost.getIpAddress() + " Disk Usage greater than 90%,so starting clean up process ");
                     String ipAddress = remoteHost.getIpAddress();
