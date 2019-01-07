@@ -42,7 +42,7 @@ public class DiskSpaceMonitor
     {
         ChannelExec channelExec=null;
         String stopCuckooCommand="kill -9 $(ps -ef | grep '[a-zA-Z/]/bin/cuckoo' | head -n 1 |awk '{print $2}')";
-        String startCuckooCommand="source venv/bin/activate && cuckoo &";
+        String startCuckooCommand="source venv/bin/activate && supervisord -c $CWD/supervisord.conf";
         try
         {
             executeCommandOnRemoteMachine(session,stopCuckooCommand);
@@ -52,7 +52,7 @@ public class DiskSpaceMonitor
             Thread.sleep(3000);
             session=getSession(remoteHost);
             executeCommandOnRemoteMachine(session,startCuckooCommand);
-            //System.out.println("Started Cuckoo on "+session.getHost());
+            System.out.println("Started Cuckoo on "+session.getHost());
 
         }
         catch (Exception e)
@@ -100,16 +100,6 @@ public class DiskSpaceMonitor
             channelExec.connect();
             readCommandOutput(channelExec,in);
             Thread.sleep(5000);
-
-            /* ChannelExec finalChannelExec = channelExec;
-           TimerTask task = new TimerTask()
-            {
-                public void run()
-                {
-                    readCommandOutput(finalChannelExec,in);
-                }
-            };*/
-
         }
         catch (Exception e)
         {
