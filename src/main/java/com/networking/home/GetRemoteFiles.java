@@ -6,7 +6,7 @@ import com.networking.util.LocalOperationsUtil;
 import com.networking.util.UtilityThread;
 
 /**
- * Class used to download, delete and move files between machines.
+ * Deprecated Class used to download, delete and move files between machines.
  * @see DiskSpaceMonitor class automated class
  *
  */

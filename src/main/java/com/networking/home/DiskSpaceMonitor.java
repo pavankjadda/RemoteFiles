@@ -8,6 +8,7 @@ import com.networking.config.RemoteHost;
 import com.networking.constants.CuckooConstants;
 import com.networking.delete.DeleteThread;
 import com.networking.download.DownloadThread;
+import com.networking.util.LocalOperationsUtil;
 import com.networking.util.RemoteOperationsUtil;
 import com.networking.util.UtilityThread;
 import org.slf4j.Logger;
@@ -27,6 +28,7 @@ public class DiskSpaceMonitor
     public static void main(String[] args)
     {
         RemoteOperationsUtil remoteOperationsUtil=new RemoteOperationsUtil();
+        LocalOperationsUtil localOperationsUtil=new LocalOperationsUtil();
         List<RemoteHost> remoteHostList=remoteOperationsUtil.getRemoteHostsDetails();
         //noinspection InfiniteLoopStatement
         do
@@ -58,6 +60,7 @@ public class DiskSpaceMonitor
                     UtilityThread utilityThread = new UtilityThread(threadName);
                     utilityThread.start();
 
+                    localOperationsUtil.archiveExternalMalwaresFolder();
 
                     //Start Cuckoo again once everything is done
                     session = getSession(remoteHost);
@@ -238,7 +241,7 @@ public class DiskSpaceMonitor
 
     private static int getDiskUsagePercentage(ChannelExec channelExec)
     {
-        InputStream in = null;
+        InputStream in;
         int disUsagePercentage = 0;
         try
         {
