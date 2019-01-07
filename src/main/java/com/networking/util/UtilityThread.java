@@ -1,6 +1,8 @@
 package com.networking.util;
 
-import com.networking.config.RemoteHost;
+import com.networking.constants.CuckooConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class UtilityThread implements Runnable
 {
@@ -8,6 +10,7 @@ public class UtilityThread implements Runnable
     private Thread t=null;
     private LocalOperationsUtil localOperationsUtil;
 
+    static private Logger logger= LoggerFactory.getLogger(UtilityThread.class);
 
     public UtilityThread(String threadName)
     {
@@ -19,7 +22,8 @@ public class UtilityThread implements Runnable
     @Override
     public void run()
     {
-        localOperationsUtil.moveFiles("/home/cuckoo/Desktop/MalwareReports/","/media/cuckoo/VirusShare/Malware_JSON_Reports/malwares/");
+        logger.info("Moving {} reports from {} to external disk: {} ",threadName,CuckooConstants.localMalwareReportsDirectory,CuckooConstants.externalMediaDirectory);
+        localOperationsUtil.moveFiles(CuckooConstants.localMalwareReportsDirectory,CuckooConstants.externalMediaDirectory);
     }
 
 

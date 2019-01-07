@@ -5,6 +5,11 @@ import com.networking.download.DownloadThread;
 import com.networking.util.LocalOperationsUtil;
 import com.networking.util.UtilityThread;
 
+/**
+ * Class used to download, delete and move files between machines.
+ * @see DiskSpaceMonitor class automated class
+ *
+ */
 public class GetRemoteFiles
 {
     public static void main(String[] args)

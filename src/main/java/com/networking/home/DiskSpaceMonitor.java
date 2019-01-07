@@ -5,9 +5,16 @@ import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
 import com.networking.config.RemoteHost;
+import com.networking.constants.CuckooConstants;
+import com.networking.delete.DeleteThread;
+import com.networking.download.DownloadThread;
 import com.networking.util.RemoteOperationsUtil;
+import com.networking.util.UtilityThread;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Timer;
@@ -15,43 +22,73 @@ import java.util.TimerTask;
 
 public class DiskSpaceMonitor
 {
-    static ChannelSftp channelSftp = null;
+    private static Logger logger= LoggerFactory.getLogger(DiskSpaceMonitor.class);
 
     public static void main(String[] args)
     {
         RemoteOperationsUtil remoteOperationsUtil=new RemoteOperationsUtil();
         List<RemoteHost> remoteHostList=remoteOperationsUtil.getRemoteHostsDetails();
-        for(RemoteHost remoteHost:remoteHostList)
+        //noinspection InfiniteLoopStatement
+        do
         {
-            Session session=getSession(remoteHost);
-            //int diskUsagePercentage = getDiskUsage(session);
-            //System.out.println(remoteHost.getIpAddress()+" Disk Usage: "+diskUsagePercentage);
+            for (RemoteHost remoteHost : remoteHostList)
+            {
+                Session session = getSession(remoteHost);
+                int diskUsagePercentage = getDiskUsage(session);
+                logger.info("TimeStamp: " + LocalDateTime.now() + "  " + remoteHost.getIpAddress() + " Disk Usage: " + diskUsagePercentage);
 
-            //session=getSession(remoteHost);
-            //executeCommandOnRemoteMachine(session);
-            //System.out.println("Cuckoo Process killed on "+session.getHost());
+                if (diskUsagePercentage > 60)
+                {
+                    logger.info(remoteHost.getIpAddress() + " Disk Usage greater than 90%,so starting clean up process ");
+                    String ipAddress = remoteHost.getIpAddress();
+                    String threadName = remoteHost.getIpAddress();
 
-            //Start Cuckoo
-            //stopCuckooOnRemoteMachine(session);
-            startCuckooOnRemoteMachine(session,remoteHost);
-            System.out.println("Cuckoo Process started on "+session.getHost());
-        }
+                    session = getSession(remoteHost);
+                    stopCuckooOnRemoteMachine(session);
+
+                    // Start Download Thread and copy files to local machine
+                    DownloadThread downloadThread = new DownloadThread(threadName, ipAddress);
+                    downloadThread.start();
+
+                    // Start Delete Thread and delete analyzed files from Malware Folder
+                    DeleteThread deleteThread = new DeleteThread(threadName, ipAddress);
+                    deleteThread.start();
+
+                    // Move malware reports from local machine to External Directory
+                    UtilityThread utilityThread = new UtilityThread(threadName);
+                    utilityThread.start();
+
+                    //Start Cuckoo again once everything is done
+                    session = getSession(remoteHost);
+                    startCuckooOnRemoteMachine(session, remoteHost);
+                }
+
+            }
+            try
+            {
+                //Sleep for 5 minutes
+                Thread.sleep(3000);
+            }
+            catch (InterruptedException e)
+            {
+                e.printStackTrace();
+            }
+        } while (true);
+
     }
 
     private static void startCuckooOnRemoteMachine(Session session, RemoteHost remoteHost)
     {
         ChannelExec channelExec=null;
-        String stopCuckooCommand="kill -9 $(ps -ef | grep '[a-zA-Z/]/bin/cuckoo' | head -n 1 |awk '{print $2}')";
-        String startCuckooCommand="source venv/bin/activate && supervisord -c $CWD/supervisord.conf";
         try
         {
-            executeCommandOnRemoteMachine(session,stopCuckooCommand);
+            executeCommandOnRemoteMachine(session, CuckooConstants.stopCuckooCommand);
             System.out.println("Stopped Cuckoo on "+session.getHost());
             session.disconnect();
 
             Thread.sleep(3000);
             session=getSession(remoteHost);
-            executeCommandOnRemoteMachine(session,startCuckooCommand);
+            executeCommandOnRemoteMachine(session,CuckooConstants.startCuckooCommand);
             System.out.println("Started Cuckoo on "+session.getHost());
 
         }
@@ -68,12 +105,9 @@ public class DiskSpaceMonitor
 
     private static void stopCuckooOnRemoteMachine(Session session)
     {
-        ChannelExec channelExec=null;
-        String stopCuckooCommand="kill -9 $(ps -ef | grep /bin/cuckoo | head -n 1 |awk '{print $2}')";
         try
         {
-            session.connect();
-            executeCommandOnRemoteMachine(session,stopCuckooCommand);
+            executeCommandOnRemoteMachine(session,CuckooConstants.stopCuckooCommand);
         }
         catch (Exception e)
         {
@@ -99,7 +133,6 @@ public class DiskSpaceMonitor
             InputStream in = channelExec.getInputStream();
             channelExec.connect();
             readCommandOutput(channelExec,in);
-            Thread.sleep(5000);
         }
         catch (Exception e)
         {
